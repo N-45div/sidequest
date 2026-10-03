@@ -1,0 +1,139 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { Zap, Plus, Users, LockKeyhole, Check, CalendarDays, MapPin, Coffee, Trees, Palette, Utensils, Dices, X, Link, CheckCircle2, Clock3, Sparkles, LoaderCircle, ExternalLink, Download, SlidersHorizontal } from 'lucide-react';
+import './style.css';
+
+type Preferences = { budget: number; start: number; end: number; interests: string[]; quiet: boolean; stepFree: boolean };
+type Candidate = { id: string; name: string; subtitle: string; category: string; cost: number | null; duration: number; start: number; tone: string; sample: boolean; source: string | null; uncertainties: string[]; reason: string; votes: number };
+type Outing = { id: string; title: string; city: string; date: string; mode: 'sample' | 'live'; version: number; participants: { id: string; name: string; ready: boolean; voted: boolean }[]; candidates: Candidate[]; observations: { venue: string; board: string; peakToPeak: number; observedAt: string }[]; decision: { candidateId: string } | null; me: { id: string; name: string; host: boolean; preferences: Preferences | null; vote: string | null } };
+type Preview = { title: string; city: string; date: string; mode: string; closed: boolean };
+const icons: Record<string, typeof Coffee> = { coffee: Coffee, outdoors: Trees, art: Palette, food: Utensils, games: Dices };
+const interestLabels: Record<string, string> = { coffee: 'Coffee', food: 'Food', games: 'Games', outdoors: 'Outdoors', art: 'Art & culture' };
+const defaults: Preferences = { budget: 600, start: 1020, end: 1320, interests: ['coffee', 'games'], quiet: false, stepFree: false };
+const formatTime = (minutes: number) => new Date(2000, 0, 1, 0, minutes).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
+const timeValue = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+const parseTime = (value: string) => { const [h, m] = value.split(':').map(Number); return h * 60 + m; };
+const dateLabel = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+const tomorrow = () => { const d = new Date(Date.now() + 86400000); return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }); };
+
+function App() {
+  const [outing, setOuting] = useState<Outing | null>(null);
+  const [preview, setPreview] = useState<Preview | null>(null);
+  const [route, setRoute] = useState(() => location.pathname.match(/^\/q\/([a-f0-9]+)$/)?.[1] || '');
+  const [capabilities, setCapabilities] = useState({ ai: false, liveSearch: false });
+  const [loading, setLoading] = useState(!!route);
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const [draft, setDraft] = useState<Preferences>(defaults);
+  const [text, setText] = useState('');
+  const [consent, setConsent] = useState(false);
+  const [acknowledge, setAcknowledge] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const tokenFor = (id: string) => sessionStorage.getItem(`sidequest:${id}`) || '';
+
+  async function api(path: string, method = 'GET', body?: unknown, id = route) {
+    const credential = tokenFor(id);
+    const response = await fetch(`/api${path}`, { method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(credential ? { Authorization: `Bearer ${credential}` } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Request failed. Please try again.');
+    return data;
+  }
+  async function action(key: string, work: () => Promise<void>) {
+    setBusy(key); setError('');
+    try { await work(); } catch (e) { setError(e instanceof Error ? e.message : 'Something went wrong.'); } finally { setBusy(''); }
+  }
+  function enter(data: { credential: string; outing: Outing }) {
+    sessionStorage.setItem(`sidequest:${data.outing.id}`, data.credential);
+    history.pushState({}, '', `/q/${data.outing.id}`); setRoute(data.outing.id); setOuting(data.outing); setPreview(null);
+  }
+  function home() { history.pushState({}, '', '/'); setRoute(''); setOuting(null); setPreview(null); setError(''); }
+  useEffect(() => { api('/capabilities').then(setCapabilities).catch(() => {}); const pop = () => { setOuting(null); setRoute(location.pathname.match(/^\/q\/([a-f0-9]+)$/)?.[1] || ''); }; window.addEventListener('popstate', pop); return () => window.removeEventListener('popstate', pop); }, []);
+  useEffect(() => {
+    if (!route) { setLoading(false); return; }
+    let cancelled = false;
+    const refresh = async (initial = false) => {
+      try {
+        if (tokenFor(route)) { const data = await api(`/outings/${route}`); if (!cancelled) { setOuting(data); setPreview(null); } }
+        else { const data = await api(`/outings/${route}/preview`); if (!cancelled) setPreview(data); }
+      } catch (e) { if (!cancelled && initial) setError((e as Error).message); }
+      finally { if (!cancelled) setLoading(false); }
+    };
+    refresh(true); const timer = setInterval(refresh, 5000); return () => { cancelled = true; clearInterval(timer); };
+  }, [route]);
+  useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 4000); return () => clearTimeout(timer); }, [notice]);
+  useEffect(() => { if (preferencesOpen) dialogRef.current?.showModal(); else dialogRef.current?.close(); }, [preferencesOpen]);
+
+  function editPreferences() { setDraft(outing?.me.preferences || defaults); setText(''); setConsent(false); setPreferencesOpen(true); }
+  async function copyInvite() { await navigator.clipboard.writeText(`${location.origin}/q/${route}`); setNotice('Invite link copied. Friends join with their own private preferences.'); }
+  async function downloadCalendar() {
+    const response = await fetch(`/api/outings/${route}/calendar`, { headers: { Authorization: `Bearer ${tokenFor(route)}` } });
+    if (!response.ok) throw new Error('Could not download the invite.');
+    const url = URL.createObjectURL(await response.blob()); const a = document.createElement('a'); a.href = url; a.download = 'sidequest.ics'; a.click(); URL.revokeObjectURL(url);
+  }
+  const confirmed = outing?.candidates.find(c => c.id === outing.decision?.candidateId);
+  const ready = outing?.participants.filter(p => p.ready).length || 0;
+
+  return <div className="app-shell">
+    <aside className="sidebar">
+      <button className="wordmark" onClick={home} aria-label="SideQuest home"><span className="brand-icon"><Zap size={22} fill="currentColor" /></span>sidequest<span className="brand-period">.</span></button>
+      <div className="sidebar-topline">GOOD PLANS START HERE</div>
+      <button className={`nav-item ${!outing ? 'active' : ''}`} onClick={home}><Plus size={19} /> New outing</button>
+      {outing && <div className="nav-item active"><Users size={19} /> Your decision room</div>}
+      <div className="sidebar-note"><div className="note-number">01</div><p>Less “what’s the plan?”<br /><strong>More being there.</strong></p><span>Find your next little adventure.</span></div>
+      <div className="sidebar-bottom"><LockKeyhole size={18} /><p>Your preferences are private.<br /><span>The decision is shared.</span></p></div>
+    </aside>
+
+    <main>
+      <header className="topbar"><div className="mobile-brand"><Zap size={18} /> sidequest.</div><span className="breadcrumb">Your people. One good plan.</span><span className="edition">WEEKEND EDITION <span>✦</span></span></header>
+      {error && <div className="message error" role="alert">{error}<button onClick={() => setError('')} aria-label="Dismiss error"><X size={18} /></button></div>}
+      {notice && <div className="message success" role="status">{notice}</div>}
+
+      {loading && !outing ? <div className="loading"><LoaderCircle className="spin" /> Opening your outing…</div> : outing ? <>
+        <section className="room-heading">
+          <div><div className="eyebrow"><span className="tiny-star">✦</span> {confirmed ? 'IT’S HAPPENING' : 'YOUR DECISION ROOM'}</div><h1>{outing.title}<span className="lime-period">.</span></h1><div className="meta"><span><MapPin size={16} /> {outing.city}</span><span><CalendarDays size={16} /> {dateLabel(outing.date)}</span><span><Users size={16} /> {outing.participants.length} people</span></div></div>
+          <button className="button secondary" onClick={() => action('copy', copyInvite)} disabled={!!busy || !!outing.decision}><Link size={17} /> Invite friends</button>
+        </section>
+        {outing.mode === 'sample' && <div className="sample-banner"><Sparkles size={17} /><span><strong>Sample experience.</strong> Activities and prices are illustrative. The demo group is fictional.</span></div>}
+        <section className="people-strip"><div><div className="avatar-stack">{outing.participants.map((p, i) => <span key={p.id} className={`avatar avatar-${i % 4}`} title={`${p.name}${p.ready ? ' · ready' : ' · waiting'}`}>{p.name.charAt(0)}{p.ready && <i><Check size={9} /></i>}</span>)}</div><div><strong>{ready} of {outing.participants.length} ready</strong><p>{outing.participants.map(p => p.name).join(', ')}</p></div></div><button className="text-button" onClick={editPreferences} disabled={!!outing.decision}><SlidersHorizontal size={16} /> {outing.me.preferences ? 'Your preferences' : 'Add your preferences'}</button></section>
+
+        {confirmed ? <section className="confirmed"><span className="confirmed-icon"><CheckCircle2 size={40} /></span><div className="eyebrow">GROUP CHAT, MEET ACTUAL PLAN</div><h2>{confirmed.name}</h2><p>{dateLabel(outing.date)} · {formatTime(confirmed.start)} IST · {outing.city}</p><div className="confirmation-note">{confirmed.uncertainties.join(' ')}</div><button className="button primary" onClick={() => action('calendar', downloadCalendar)} disabled={!!busy}><Download size={18} /> Save to calendar</button></section> : <>
+          <section className="section-heading"><div><div className="eyebrow">THE SHORTLIST</div><h2>{outing.candidates.length ? 'Something for everyone.' : 'Let’s find your common ground.'}</h2><p>{outing.candidates.length ? 'Pick your favourite. The organiser confirms the final choice.' : 'Everyone saves their preferences, then the organiser finds options.'}</p></div>{outing.me.host && <button className="button primary" disabled={!!busy || ready !== outing.participants.length} onClick={() => action('discover', async () => { const data = await api(`/outings/${route}/discover`, 'POST', {}); setOuting(data); if (!data.candidates.length) setNotice('No options fit. Update your preferences together and try again.'); })}>{busy === 'discover' ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />} {outing.candidates.length ? 'Find fresh options' : 'Find our options'}</button>}</section>
+          {outing.candidates.length ? <div className="candidate-grid">{outing.candidates.map((candidate, i) => {
+            const Icon = icons[candidate.category] || Coffee, selected = outing.me.vote === candidate.id;
+            return <article className={`candidate-card ${selected ? 'selected' : ''}`} key={candidate.id}>
+              <div className={`card-visual ${candidate.tone}`}><span className="option-number">OPTION 0{i + 1}</span><Icon size={64} strokeWidth={1.3} /><span className="category-label">{interestLabels[candidate.category]}</span><span className="visual-caption">{candidate.sample ? 'ACTIVITY CONCEPT' : 'SEARCH RESULT'}</span></div>
+              <div className="card-content"><h3>{candidate.name}</h3><p className="card-subtitle">{candidate.subtitle}</p><div className="card-facts"><span>{candidate.cost == null ? 'Price unverified' : candidate.cost === 0 ? 'Free activity' : `₹${candidate.cost} / person`}</span><span><Clock3 size={14} /> {candidate.duration} min</span></div><p className="reason"><Check size={14} /> {candidate.reason}</p><p className="uncertainty">{candidate.uncertainties[0]}</p>{candidate.source && <a className="source-link" href={candidate.source} target="_blank" rel="noreferrer">Check venue details <ExternalLink size={13} /></a>}<div className="vote-row"><button className={`button ${selected ? 'voted' : 'vote-button'}`} disabled={!!busy || !outing.me.preferences} onClick={() => action('vote', async () => setOuting(await api(`/outings/${route}/vote`, 'POST', { candidateId: candidate.id, version: outing.version })))}>{selected ? <Check size={16} /> : <Plus size={16} />}{selected ? 'Your pick' : 'Count me in'}</button><span>{candidate.votes} {candidate.votes === 1 ? 'vote' : 'votes'}</span></div></div>
+            </article>;
+          })}</div> : <div className="empty-state"><span><Users size={32} /></span><h3>{ready === outing.participants.length ? 'Your people are ready.' : 'A good plan includes everyone.'}</h3><p>{ready === outing.participants.length ? 'Find options using the group’s saved preferences.' : 'Share the link and give everyone a moment to add theirs.'}</p>{!outing.me.preferences && <button className="button secondary" onClick={editPreferences}>Add my preferences</button>}</div>}
+          {!!outing.candidates.length && outing.me.host && <div className="finalise"><div><h3>Found the one?</h3><label className="check-label"><input type="checkbox" checked={acknowledge} onChange={e => setAcknowledge(e.target.checked)} /> I’ll check the venue details and unresolved requirements before visiting.</label></div><button className="button primary" disabled={!!busy || !outing.me.vote || !acknowledge} onClick={() => action('confirm', async () => setOuting(await api(`/outings/${route}/confirm`, 'POST', { candidateId: outing.me.vote, version: outing.version, acknowledge: true })))}><CheckCircle2 size={18} /> Confirm my pick</button></div>}
+        </>}
+        {!!outing.observations?.length && <section className="sample-banner"><span><strong>Recent device observation</strong><br />{outing.observations.at(-1)!.venue}: {outing.observations.at(-1)!.peakToPeak} raw ADC · UNO R3 · {new Date(outing.observations.at(-1)!.observedAt).toLocaleTimeString()}<br />Uncalibrated, time-specific signal. Not decibels or a guarantee of quiet.</span></section>}
+        <div className="privacy-footnote"><LockKeyhole size={14} /> Only you can see your exact preferences. Everyone can see the options and votes.</div>
+      </> : preview ? <section className="join-panel"><div className="eyebrow">YOU’RE INVITED</div><h1>{preview.title}<span className="lime-period">.</span></h1><p className="meta">{preview.city} · {dateLabel(preview.date)}</p><p>Bring your preferences. Let’s find something that works for everyone.</p>{preview.mode === 'sample' && <div className="sample-banner">This is a sample outing with illustrative activities.</div>}{preview.closed ? <p>This outing is already confirmed and closed to new participants.</p> : <form onSubmit={e => { e.preventDefault(); const form = new FormData(e.currentTarget); action('join', async () => enter(await api(`/outings/${route}/join`, 'POST', { name: form.get('name') }))); }}><label>Your name<input name="name" required maxLength={40} autoComplete="given-name" placeholder="What should your friends call you?" /></label><button className="button primary" disabled={!!busy}><Users size={18} /> Join the outing</button></form>}</section> : <section className="home-grid">
+        <div className="home-copy"><div className="eyebrow"><span className="tiny-star">✦</span> MAKE THE GROUP PLAN HAPPEN</div><h1>“We should<br />hang out.”<br /><span className="muted-headline">Let’s actually<br />do it.</span></h1><p className="intro">Your people. Their preferences.<br />One plan you can all say yes to.</p><div className="home-steps"><span><i>01</i> Gather your people</span><span><i>02</i> Find common ground</span><span><i>03</i> Make it happen</span></div><div className="home-privacy"><LockKeyhole size={17} /><p>Private budgets. Shared decisions.<br /><span>No one has to explain their limits.</span></p></div></div>
+        <div className="create-panel"><div className="panel-top"><span className="panel-icon"><Zap size={22} /></span><span>YOUR NEXT SIDEQUEST</span><span className="small-star">✦</span></div><h2>Start with your people.</h2><p>We’ll help you figure out the rest.</p><form onSubmit={e => { e.preventDefault(); const form = new FormData(e.currentTarget); action('create', async () => enter(await api('/outings', 'POST', { title: form.get('title'), city: form.get('city'), date: form.get('date'), name: form.get('name'), mode: form.get('mode') }))); }}>
+          <label>Give the outing a name<input name="title" placeholder="The overdue catch-up" required maxLength={80} /></label>
+          <div className="form-row"><label>Your name<input name="name" placeholder="Your name" required maxLength={40} autoComplete="given-name" /></label><label>City<input name="city" placeholder="e.g. Bengaluru" required maxLength={80} /></label></div>
+          <label>When are we going?<input type="date" name="date" required defaultValue={tomorrow()} /></label>
+          <label>Find options using<select name="mode" defaultValue="sample"><option value="sample">Sample activities · no accounts needed</option><option value="live" disabled={!capabilities.liveSearch}>Live venues {capabilities.liveSearch ? '' : '· not connected yet'}</option></select></label>
+          <button className="button primary full" disabled={!!busy}>{busy === 'create' ? <LoaderCircle className="spin" size={18} /> : <Plus size={18} />} Create an outing</button>
+        </form><div className="demo-divider"><span>or take a little look around</span></div><button className="button demo full" disabled={!!busy} onClick={() => action('demo', async () => enter(await api('/demo', 'POST', {})))}><Sparkles size={17} /> Explore a sample group</button><p className="demo-disclosure">Fictional friends. Illustrative prices. A working decision room.</p></div>
+      </section>}
+      <footer><span>GOOD COMPANY IS THE WHOLE POINT.</span><span>Built for the plans worth making.</span></footer>
+    </main>
+
+    <dialog ref={dialogRef} onCancel={() => setPreferencesOpen(false)} onClose={() => setPreferencesOpen(false)} className="preferences-dialog"><form onSubmit={e => { e.preventDefault(); action('preferences', async () => { setOuting(await api(`/outings/${route}/preferences`, 'PUT', draft)); setPreferencesOpen(false); setNotice('Your private preferences are saved. Previous options and votes are cleared.'); }); }}>
+      <div className="dialog-heading"><div><div className="eyebrow"><LockKeyhole size={13} /> JUST BETWEEN US</div><h2>What works for you?</h2></div><button type="button" className="icon-button" onClick={() => setPreferencesOpen(false)} aria-label="Close preferences"><X /></button></div><p className="dialog-intro">Your group sees the options, not your exact budget or requirements.</p>
+      {capabilities.ai && <div className="ai-input"><label>Tell us in your own words<textarea value={text} onChange={e => setText(e.target.value)} maxLength={2000} placeholder="Coffee after 6, under ₹500, somewhere quiet…" /></label><label className="check-label"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> Send this text to the configured AI provider.</label><button type="button" className="button secondary" disabled={!!busy || !consent || !text.trim()} onClick={() => action('interpret', async () => { const data = await api(`/outings/${route}/interpret`, 'POST', { text, defaults: draft, consent: true }); setDraft(data.draft); setNotice('Review the draft below before saving.'); })}><Sparkles size={16} /> Interpret, then review</button></div>}
+      <label>Maximum spend per person <span className="private-label">PRIVATE</span><div className="budget-value">₹<input type="number" aria-label="Maximum spend per person" min={0} max={100000} required value={draft.budget} onChange={e => setDraft({ ...draft, budget: Number(e.target.value) })} /></div></label>
+      <div className="form-row"><label>Free from<input type="time" value={timeValue(draft.start)} required onChange={e => setDraft({ ...draft, start: parseTime(e.target.value) })} /></label><label>Until<input type="time" value={timeValue(draft.end === 1440 ? 1439 : draft.end)} required onChange={e => setDraft({ ...draft, end: parseTime(e.target.value) })} /></label></div>
+      <fieldset><legend>What sounds good?</legend><div className="interest-grid">{Object.entries(interestLabels).map(([key, label]) => { const Icon = icons[key]; return <label key={key} className={`interest ${draft.interests.includes(key) ? 'chosen' : ''}`}><input type="checkbox" checked={draft.interests.includes(key)} onChange={e => setDraft({ ...draft, interests: e.target.checked ? [...draft.interests, key] : draft.interests.filter(i => i !== key) })} /><Icon size={18} /> {label}</label>; })}</div></fieldset>
+      <label className="check-label requirement"><input type="checkbox" checked={draft.quiet} onChange={e => setDraft({ ...draft, quiet: e.target.checked })} /> I need somewhere quiet</label><label className="check-label requirement"><input type="checkbox" checked={draft.stepFree} onChange={e => setDraft({ ...draft, stepFree: e.target.checked })} /> I need step-free access</label>
+      <p className="dialog-warning">Saving changes clears the group’s previous options and votes.</p>{error && <p className="inline-error" role="alert">{error}</p>}<button className="button primary full" disabled={!!busy || !draft.interests.length || draft.end <= draft.start}><Check size={18} /> Save my preferences</button>
+    </form></dialog>
+  </div>;
+}
+
+createRoot(document.getElementById('root')!).render(<React.StrictMode><App /></React.StrictMode>);
