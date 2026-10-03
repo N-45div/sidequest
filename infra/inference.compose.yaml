@@ -1,0 +1,28 @@
+# Run on an appropriately sized DigitalOcean host with Docker Compose.
+# Pin both image references to a reviewed tag or digest in .env.inference.
+services:
+  ollama:
+    image: ${OLLAMA_IMAGE:?Set a pinned Ollama image}
+    restart: unless-stopped
+    volumes:
+      - models:/root/.ollama
+    # No published inference port; only the authenticated proxy reaches it.
+  proxy:
+    image: ${CADDY_IMAGE:?Set a pinned Caddy image}
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      INFERENCE_DOMAIN: ${INFERENCE_DOMAIN:?Set your domain}
+      INFERENCE_API_KEY: ${INFERENCE_API_KEY:?Set a random secret}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - ollama
+volumes:
+  models:
+  caddy_data:
+  caddy_config:

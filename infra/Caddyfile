@@ -1,0 +1,16 @@
+{$INFERENCE_DOMAIN} {
+  @unauthorized {
+    not header Authorization "Bearer {$INFERENCE_API_KEY}"
+  }
+  respond @unauthorized "Unauthorized" 401
+  @inference {
+    method POST
+    path /v1/chat/completions /v1/embeddings
+  }
+  handle @inference {
+    reverse_proxy ollama:11434
+  }
+  handle {
+    respond "Not found" 404
+  }
+}
