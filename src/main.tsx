@@ -5,7 +5,7 @@ import './style.css';
 
 type Preferences = { budget: number; start: number; end: number; interests: string[]; quiet: boolean; stepFree: boolean };
 type Candidate = { id: string; name: string; subtitle: string; category: string; cost: number | null; duration: number; start: number; tone: string; sample: boolean; source: string | null; uncertainties: string[]; reason: string; votes: number };
-type Outing = { id: string; title: string; city: string; date: string; mode: 'sample' | 'live'; version: number; participants: { id: string; name: string; ready: boolean; voted: boolean }[]; candidates: Candidate[]; observations: { venue: string; board: string; peakToPeak: number; observedAt: string }[]; decision: { candidateId: string } | null; me: { id: string; name: string; host: boolean; preferences: Preferences | null; vote: string | null } };
+type Outing = { id: string; title: string; city: string; date: string; mode: 'sample' | 'live'; version: number; discovery: { status: 'queued' | 'complete' | 'failed' } | null; participants: { id: string; name: string; ready: boolean; voted: boolean }[]; candidates: Candidate[]; observations: { venue: string; board: string; peakToPeak: number; observedAt: string }[]; decision: { candidateId: string } | null; me: { id: string; name: string; host: boolean; preferences: Preferences | null; vote: string | null } };
 type Preview = { title: string; city: string; date: string; mode: string; closed: boolean };
 const icons: Record<string, typeof Coffee> = { coffee: Coffee, outdoors: Trees, art: Palette, food: Utensils, games: Dices };
 const interestLabels: Record<string, string> = { coffee: 'Coffee', food: 'Food', games: 'Games', outdoors: 'Outdoors', art: 'Art & culture' };
@@ -20,7 +20,7 @@ function App() {
   const [outing, setOuting] = useState<Outing | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [route, setRoute] = useState(() => location.pathname.match(/^\/q\/([a-f0-9]+)$/)?.[1] || '');
-  const [capabilities, setCapabilities] = useState({ ai: false, liveSearch: false });
+  const [capabilities, setCapabilities] = useState({ ai: false, liveSearch: false, voiceInput: false, voiceOutput: false });
   const [loading, setLoading] = useState(!!route);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -29,6 +29,10 @@ function App() {
   const [draft, setDraft] = useState<Preferences>(defaults);
   const [text, setText] = useState('');
   const [consent, setConsent] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioConsent, setAudioConsent] = useState(false);
+  const [speechConsent, setSpeechConsent] = useState(false);
+  const [speechUrl, setSpeechUrl] = useState('');
   const [acknowledge, setAcknowledge] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const tokenFor = (id: string) => sessionStorage.getItem(`sidequest:${id}`) || '';
@@ -64,8 +68,23 @@ function App() {
   }, [route]);
   useEffect(() => { if (!notice) return; const timer = setTimeout(() => setNotice(''), 4000); return () => clearTimeout(timer); }, [notice]);
   useEffect(() => { if (preferencesOpen) dialogRef.current?.showModal(); else dialogRef.current?.close(); }, [preferencesOpen]);
+  useEffect(() => { setSpeechUrl(''); setSpeechConsent(false); }, [route]);
+  useEffect(() => () => { if (speechUrl) URL.revokeObjectURL(speechUrl); }, [speechUrl]);
 
-  function editPreferences() { setDraft(outing?.me.preferences || defaults); setText(''); setConsent(false); setPreferencesOpen(true); }
+  function editPreferences() { setDraft(outing?.me.preferences || defaults); setText(''); setConsent(false); setAudioFile(null); setAudioConsent(false); setPreferencesOpen(true); }
+  async function transcribe() {
+    if (!audioFile || !audioConsent) return;
+    if (audioFile.size > 5 * 1024 * 1024) throw new Error('Choose an audio file smaller than 5 MB.');
+    const form = new FormData(); form.append('audio', audioFile); form.append('consent', 'true');
+    const response = await fetch(`/api/outings/${route}/transcribe`, { method: 'POST', headers: { Authorization: `Bearer ${tokenFor(route)}` }, body: form });
+    const data = await response.json(); if (!response.ok) throw new Error(data.error);
+    setText(data.text); setAudioFile(null); setNotice('Review your transcript. Your saved preferences have not changed.');
+  }
+  async function createSpeech() {
+    const response = await fetch(`/api/outings/${route}/speak`, { method: 'POST', headers: { Authorization: `Bearer ${tokenFor(route)}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ consent: true }) });
+    if (!response.ok) { const data = await response.json(); throw new Error(data.error); }
+    setSpeechUrl(URL.createObjectURL(await response.blob()));
+  }
   async function copyInvite() { await navigator.clipboard.writeText(`${location.origin}/q/${route}`); setNotice('Invite link copied. Friends join with their own private preferences.'); }
   async function downloadCalendar() {
     const response = await fetch(`/api/outings/${route}/calendar`, { headers: { Authorization: `Bearer ${tokenFor(route)}` } });
@@ -96,10 +115,12 @@ function App() {
           <button className="button secondary" onClick={() => action('copy', copyInvite)} disabled={!!busy || !!outing.decision}><Link size={17} /> Invite friends</button>
         </section>
         {outing.mode === 'sample' && <div className="sample-banner"><Sparkles size={17} /><span><strong>Sample experience.</strong> Activities and prices are illustrative. The demo group is fictional.</span></div>}
+        {outing.discovery?.status === 'queued' && <div className="sample-banner" role="status"><LoaderCircle className="spin" size={17} /><span>Finding options in the background. You can leave this page and return. Use Find our options to retry connecting if needed.</span></div>}
+        {outing.discovery?.status === 'failed' && <div className="message error" role="alert">The background search could not finish. Your preferences are saved. Try finding options again.</div>}
         <section className="people-strip"><div><div className="avatar-stack">{outing.participants.map((p, i) => <span key={p.id} className={`avatar avatar-${i % 4}`} title={`${p.name}${p.ready ? ' · ready' : ' · waiting'}`}>{p.name.charAt(0)}{p.ready && <i><Check size={9} /></i>}</span>)}</div><div><strong>{ready} of {outing.participants.length} ready</strong><p>{outing.participants.map(p => p.name).join(', ')}</p></div></div><button className="text-button" onClick={editPreferences} disabled={!!outing.decision}><SlidersHorizontal size={16} /> {outing.me.preferences ? 'Your preferences' : 'Add your preferences'}</button></section>
 
-        {confirmed ? <section className="confirmed"><span className="confirmed-icon"><CheckCircle2 size={40} /></span><div className="eyebrow">GROUP CHAT, MEET ACTUAL PLAN</div><h2>{confirmed.name}</h2><p>{dateLabel(outing.date)} · {formatTime(confirmed.start)} IST · {outing.city}</p><div className="confirmation-note">{confirmed.uncertainties.join(' ')}</div><button className="button primary" onClick={() => action('calendar', downloadCalendar)} disabled={!!busy}><Download size={18} /> Save to calendar</button></section> : <>
-          <section className="section-heading"><div><div className="eyebrow">THE SHORTLIST</div><h2>{outing.candidates.length ? 'Something for everyone.' : 'Let’s find your common ground.'}</h2><p>{outing.candidates.length ? 'Pick your favourite. The organiser confirms the final choice.' : 'Everyone saves their preferences, then the organiser finds options.'}</p></div>{outing.me.host && <button className="button primary" disabled={!!busy || ready !== outing.participants.length} onClick={() => action('discover', async () => { const data = await api(`/outings/${route}/discover`, 'POST', {}); setOuting(data); if (!data.candidates.length) setNotice('No options fit. Update your preferences together and try again.'); })}>{busy === 'discover' ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />} {outing.candidates.length ? 'Find fresh options' : 'Find our options'}</button>}</section>
+        {confirmed ? <section className="confirmed"><span className="confirmed-icon"><CheckCircle2 size={40} /></span><div className="eyebrow">GROUP CHAT, MEET ACTUAL PLAN</div><h2>{confirmed.name}</h2><p>{dateLabel(outing.date)} · {formatTime(confirmed.start)} IST · {outing.city}</p><div className="confirmation-note">{confirmed.uncertainties.join(' ')}</div><button className="button primary" onClick={() => action('calendar', downloadCalendar)} disabled={!!busy}><Download size={18} /> Save to calendar</button>{capabilities.voiceOutput && <div className="voice-controls"><label className="check-label"><input type="checkbox" checked={speechConsent} onChange={e => setSpeechConsent(e.target.checked)} /> Send the confirmed plan to ElevenLabs to create an audio invitation.</label><button className="button secondary" disabled={!!busy || !speechConsent} onClick={() => action('speech', createSpeech)}>Create audio invite</button>{speechUrl && <audio controls src={speechUrl} />}</div>}</section> : <>
+          <section className="section-heading"><div><div className="eyebrow">THE SHORTLIST</div><h2>{outing.candidates.length ? 'Something for everyone.' : 'Let’s find your common ground.'}</h2><p>{outing.candidates.length ? 'Pick your favourite. The organiser confirms the final choice.' : 'Everyone saves their preferences, then the organiser finds options.'}</p></div>{outing.me.host && <button className="button primary" disabled={!!busy || ready !== outing.participants.length} onClick={() => action('discover', async () => { const data = await api(`/outings/${route}/discover`, 'POST', {}); setOuting(data); if (data.discovery?.status === 'queued') setNotice('Finding options in the background. This room will update automatically.'); else if (!data.candidates.length) setNotice('No options fit. Update your preferences together and try again.'); })}>{busy === 'discover' ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />} {outing.candidates.length ? 'Find fresh options' : 'Find our options'}</button>}</section>
           {outing.candidates.length ? <div className="candidate-grid">{outing.candidates.map((candidate, i) => {
             const Icon = icons[candidate.category] || Coffee, selected = outing.me.vote === candidate.id;
             return <article className={`candidate-card ${selected ? 'selected' : ''}`} key={candidate.id}>
@@ -126,6 +147,7 @@ function App() {
 
     <dialog ref={dialogRef} onCancel={() => setPreferencesOpen(false)} onClose={() => setPreferencesOpen(false)} className="preferences-dialog"><form onSubmit={e => { e.preventDefault(); action('preferences', async () => { setOuting(await api(`/outings/${route}/preferences`, 'PUT', draft)); setPreferencesOpen(false); setNotice('Your private preferences are saved. Previous options and votes are cleared.'); }); }}>
       <div className="dialog-heading"><div><div className="eyebrow"><LockKeyhole size={13} /> JUST BETWEEN US</div><h2>What works for you?</h2></div><button type="button" className="icon-button" onClick={() => setPreferencesOpen(false)} aria-label="Close preferences"><X /></button></div><p className="dialog-intro">Your group sees the options, not your exact budget or requirements.</p>
+      {capabilities.voiceInput && <div className="voice-controls"><label>Upload a short voice note (up to 5 MB)<input type="file" accept="audio/mpeg,audio/wav,audio/x-wav,audio/webm,audio/mp4,audio/ogg" onChange={e => setAudioFile(e.target.files?.[0] || null)} /></label><label className="check-label"><input type="checkbox" checked={audioConsent} onChange={e => setAudioConsent(e.target.checked)} /> Send this recording to ElevenLabs for transcription.</label><button type="button" className="button secondary" disabled={!!busy || !audioFile || !audioConsent} onClick={() => action('transcribe', transcribe)}>Transcribe, then review</button>{!capabilities.ai && <label>Transcript<textarea value={text} onChange={e => setText(e.target.value)} maxLength={2000} /><small>Use the controls below to enter these preferences.</small></label>}</div>}
       {capabilities.ai && <div className="ai-input"><label>Tell us in your own words<textarea value={text} onChange={e => setText(e.target.value)} maxLength={2000} placeholder="Coffee after 6, under ₹500, somewhere quiet…" /></label><label className="check-label"><input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} /> Send this text to the configured AI provider.</label><button type="button" className="button secondary" disabled={!!busy || !consent || !text.trim()} onClick={() => action('interpret', async () => { const data = await api(`/outings/${route}/interpret`, 'POST', { text, defaults: draft, consent: true }); setDraft(data.draft); setNotice('Review the draft below before saving.'); })}><Sparkles size={16} /> Interpret, then review</button></div>}
       <label>Maximum spend per person <span className="private-label">PRIVATE</span><div className="budget-value">₹<input type="number" aria-label="Maximum spend per person" min={0} max={100000} required value={draft.budget} onChange={e => setDraft({ ...draft, budget: Number(e.target.value) })} /></div></label>
       <div className="form-row"><label>Free from<input type="time" value={timeValue(draft.start)} required onChange={e => setDraft({ ...draft, start: parseTime(e.target.value) })} /></label><label>Until<input type="time" value={timeValue(draft.end === 1440 ? 1439 : draft.end)} required onChange={e => setDraft({ ...draft, end: parseTime(e.target.value) })} /></label></div>
