@@ -16,6 +16,10 @@ Independent new project for the Hacktoberfest Weekend Challenge. The current per
 - Optional SerpApi live discovery and Gemma-compatible extraction adapters, awaiting live verification with credentials.
 - UNO R3 sketch, serial bridge, and authenticated observation endpoint. Hardware is not physically verified.
 - Tinker connectivity verified; actual bounded fine-tuning experiment completed. Exact JSON matches improved from 0/6 to 2/6 synthetic cases; this remains too unreliable for production. See [evaluations](evaluations/README.md).
+- Mastra discovery and model interpretation workflows; discovery executed locally.
+- Temporal queued discovery and separate worker. A real local Temporal server recovered a persisted retry after worker replacement.
+- Consent-based voice-note uploads, reviewable transcription drafts and confirmed audio invitations. Browser flows tested with provider fixtures; live ElevenLabs access is pending.
+- Sentry spans with strict export redaction, optional Tiger Data hybrid retrieval and authenticated inference deployment files. See [integration setup](infra/README.md).
 
 This is a working prototype, not a completed all-sponsor submission or a deployed Render service. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
 
@@ -38,9 +42,11 @@ Participant credentials are stored in sessionStorage on the joining device. Shar
 ```powershell
 npm test
 node scripts/browser-check.mjs
+node scripts/voice-ui-check.mjs
+npm run check:temporal
 ```
 
-The browser check requires installed Google Chrome and a running app on port 3100. It covers desktop and mobile flows, separate participant contexts, preference updates, voting, confirmation, calendar download, persistence after refresh, and overflow. Screenshots go into ignored `artifacts/`.
+The browser checks require installed Google Chrome and a running app on port 3100. They cover desktop and mobile flows, independent participant sessions, preference updates, voting, confirmation, calendar download, refresh and overflow. The voice check uses explicit provider fixtures to test consent and review without credentials. Screenshots go into ignored `artifacts/`. The Temporal check runs the official local test server and records actual recovery results; it does not use Temporal Cloud.
 
 ## Render deployment
 

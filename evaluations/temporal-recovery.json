@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-10-03T11:52:34.591Z",
+  "environment": "Local official Temporal test server, in-memory fixture store",
+  "injectedFailure": "First discovery activity throws; first worker shuts down; new worker finishes retry",
+  "attempts": 2,
+  "result": {
+    "status": "complete",
+    "count": 3
+  },
+  "historyEvents": 11,
+  "privatePreferencesSentAsWorkflowArguments": false
+}

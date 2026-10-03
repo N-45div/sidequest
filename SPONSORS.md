@@ -6,16 +6,16 @@ Do not equate an environment variable or dependency with a completed sponsor int
 | --- | --- | --- |
 | Render | Blueprint prepared | Account/repository connection and successful public deployment |
 | Gemma | Compatible extraction adapter prepared | Model endpoint and verified live extraction |
-| DigitalOcean | Planned inference hosting | Account access, compute, model deployment |
-| Mastra | Planned workflow integration | Executed workflow wrapping real model and venue tools |
+| DigitalOcean | Authenticated inference Compose stack prepared | Account access, sized compute, model deployment and latency measurement |
+| Mastra | Executed discovery workflow using real constraint planner; model workflow wired | Live Gemma and SerpApi workflow execution with credentials |
 | SerpApi | Live Maps search adapter prepared | Key and successful source-linked venue results |
 | MongoDB Atlas | Real MongoDB persistence adapter prepared | Atlas connection and deployed multi-session verification |
-| Tiger Data | Planned venue retrieval | Database access, indexing, retrieval evaluation |
-| Temporal | Planned durable discovery | Worker/service connection, verified interrupted-job recovery |
-| Sentry Agent Tracing | Planned | Redacted real model/tool trace and diagnosed failure |
-| ElevenLabs | Planned | Live transcription and audio output |
-| Backboard | Planned | Real open-model comparison |
-| TabPFN | Planned; no historical dataset | Consented historical outing data and honest evaluation |
+| Tiger Data | Hybrid retrieval, corpus indexing and SQL migration implemented; vector validation tested | Database/embedding access, executed SQL and retrieval evaluation |
+| Temporal | Real local server verified persisted activity retry across worker replacement; app queueing and worker implemented | Atlas-backed Render worker and Temporal Cloud verification |
+| Sentry Agent Tracing | Explicit agent/model/tool spans and export redaction implemented and tested | DSN, received real trace and failure diagnosis in Sentry |
+| ElevenLabs | Consent-based upload, unsaved transcription draft and confirmed-plan speech implemented; browser/provider fixture tests pass | Key/voice ID and live transcription/audio output |
+| Backboard | Same-fixture open-model evaluation script prepared, memory disabled | Key/selected models and actual comparison results |
+| TabPFN | Chronological real-history evaluation script prepared; no dataset supplied | Consented real outing data, account and honest evaluation |
 | Tinker | Connectivity verified; real three-step LoRA training and baseline/tuned evaluation completed | Broader evaluation and reliable runtime integration; current exact-match result is only 2/6 synthetic cases |
 | Arduino | UNO R3 code and observation endpoint prepared | Physical sensor execution. UNO R3 does not meet the UNO Q category requirement |
 | Entire | Planned | Actual captured session linked in submission |
