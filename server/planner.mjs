@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
+import { retrieveVenues, indexVenues } from './venue-index.mjs';
 
 export const preferenceSchema = z.object({
   budget: z.number().int().min(0).max(100000),
@@ -38,6 +39,9 @@ export function sampleCandidates(preferences) {
 
 export async function discoverLive(city, preferences, key) {
   const categories = [...new Set(preferences.flatMap(p => p.interests))].slice(0, 3);
+  // Retrieval is optional; search still works if the index is unavailable.
+  let indexed = [];
+  try { indexed = await retrieveVenues(city, categories); } catch { /* redacted tool span records failure */ }
   const responses = await Promise.all(categories.map(async category => {
     const url = new URL('https://serpapi.com/search.json');
     url.search = new URLSearchParams({ engine: 'google_maps', q: `${category} places in ${city}`, type: 'search', api_key: key }).toString();
@@ -54,7 +58,9 @@ export async function discoverLive(city, preferences, key) {
     }));
   }));
   const unique = [...new Map(responses.flat().map(v => [v.name + v.subtitle, v])).values()];
-  return rankCandidates(unique, preferences);
+  try { await indexVenues(city, unique); } catch { /* optional indexing must not discard live results */ }
+  const merged = new Map([...indexed, ...unique].map(v => [v.name + v.subtitle, v]));
+  return rankCandidates([...merged.values()], preferences);
 }
 
 export async function extractPreferences(text, defaults) {

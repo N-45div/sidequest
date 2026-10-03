@@ -4,9 +4,9 @@ import { createStore } from '../server/store.mjs';
 import { createApp } from '../server/app.mjs';
 import { sampleCandidates, toCalendar } from '../server/planner.mjs';
 
-async function fixture(t) {
+async function fixture(t, options) {
   const store = await createStore({ mongoUri: null, file: ':memory:' });
-  const server = createApp(store).listen(0, '127.0.0.1');
+  const server = createApp(store, options).listen(0, '127.0.0.1');
   await new Promise(r => server.once('listening', r));
   t.after(async () => { await new Promise(r => server.close(r)); await store.close(); });
   const base = `http://127.0.0.1:${server.address().port}/api`;
@@ -16,6 +16,34 @@ async function fixture(t) {
   };
 }
 const preferences = { budget: 600, start: 1020, end: 1320, interests: ['coffee', 'art'], quiet: true, stepFree: true };
+test('queued discovery dispatches only IDs, retries the same job, and changes invalidate it', async t => {
+  const jobs = [];
+  const call = await fixture(t, { enqueueDiscovery: async input => { jobs.push(input); } });
+  const { data: host } = await call('/demo', 'POST', {}); const id = host.outing.id;
+  const first = await call(`/outings/${id}/discover`, 'POST', {}, host.credential);
+  assert.equal(first.status, 202); assert.equal(first.data.discovery.status, 'queued');
+  assert.equal(first.data.candidates.length, 0);
+  assert.deepEqual(Object.keys(jobs[0]).sort(), ['jobId', 'outingId', 'version']);
+  await call(`/outings/${id}/discover`, 'POST', {}, host.credential);
+  assert.deepEqual(jobs[0], jobs[1]);
+  const changed = await call(`/outings/${id}/preferences`, 'PUT', preferences, host.credential);
+  assert.equal(changed.data.discovery, null);
+});
+test('dispatch failures leave a visible retryable job and preserve preferences', async t => {
+  const call = await fixture(t, { enqueueDiscovery: async () => { throw new Error('Injected outage'); } });
+  const { data: host } = await call('/demo', 'POST', {}); const id = host.outing.id;
+  assert.equal((await call(`/outings/${id}/discover`, 'POST', {}, host.credential)).status, 503);
+  const state = (await call(`/outings/${id}`, 'GET', undefined, host.credential)).data;
+  assert.equal(state.discovery.status, 'failed'); assert.equal(state.me.preferences.budget, 600);
+});
+test('audio routes require membership, consent and a confirmed plan', async t => {
+  const call = await fixture(t);
+  const { data: host } = await call('/demo', 'POST', {}); const id = host.outing.id;
+  assert.equal((await call(`/outings/${id}/transcribe`, 'POST', {})).status, 401);
+  assert.equal((await call(`/outings/${id}/speak`, 'POST', { consent: true })).status, 401);
+  assert.equal((await call(`/outings/${id}/speak`, 'POST', {}, host.credential)).status, 400);
+  assert.equal((await call(`/outings/${id}/speak`, 'POST', { consent: true }, host.credential)).status, 409);
+});
 test('participants cannot access others’ exact constraints, and outsider tokens cannot access an outing', async t => {
   const call = await fixture(t);
   const { data: host } = await call('/outings', 'POST', { title: 'Catch-up', city: 'Bengaluru', date: '2026-10-04', name: 'Host', mode: 'sample' });

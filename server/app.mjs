@@ -2,7 +2,11 @@ import express from 'express';
 import { randomBytes, createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { z } from 'zod';
-import { preferenceSchema, sampleCandidates, discoverLive, extractPreferences, toCalendar } from './planner.mjs';
+import multer from 'multer';
+import { runDiscovery, runInterpretation } from './workflows.mjs';
+import { transcribeAudio, speakInvitation } from './voice.mjs';
+import { enqueueDiscovery } from './durable.mjs';
+import { preferenceSchema, sampleCandidates, toCalendar } from './planner.mjs';
 
 const token = () => randomBytes(24).toString('hex');
 const digest = value => createHash('sha256').update(value).digest('hex');
@@ -15,12 +19,12 @@ function publicState(group, member) {
     id: group.id, title: group.title, city: group.city, date: group.date, mode: group.mode, version: group.version,
     participants: group.members.map(m => ({ id: m.id, name: m.name, ready: !!m.preferences, voted: !!m.vote })),
     candidates: group.candidates.map(c => ({ ...c, votes: group.members.filter(m => m.vote === c.id).length })),
-    decision: group.decision, observations: group.observations || [],
+    decision: group.decision, observations: group.observations || [], discovery: group.discovery || null,
     me: { id: member.id, name: member.name, host: member.host, preferences: member.preferences, vote: member.vote },
   };
 }
 
-export function createApp(store) {
+export function createApp(store, options = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '20kb' }));
@@ -44,11 +48,11 @@ export function createApp(store) {
   };
   const save = async group => { if (!await store.save(group, group.revision)) throw fail(409, 'The group changed. Refresh and try again.'); };
   const unlocked = group => { if (group.decision) throw fail(409, 'This outing is already confirmed. Start a new outing to change the plan.'); };
-  const reset = group => { group.version++; group.candidates = []; for (const m of group.members) m.vote = null; };
+  const reset = group => { group.version++; group.candidates = []; group.discovery = null; for (const m of group.members) m.vote = null; };
   const memberRecord = (name, host = false) => { const credential = token(); return { credential, member: { id: token().slice(0, 16), name, host, tokenHash: digest(credential), preferences: null, vote: null } }; };
 
   app.get('/api/health', (req, res) => res.json({ ok: true, storage: store.kind }));
-  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !!process.env.SERPAPI_API_KEY }));
+  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID) }));
   app.post('/api/outings', async (req, res) => {
     const input = createSchema.parse(req.body);
     if (input.mode === 'live' && !process.env.SERPAPI_API_KEY) throw fail(503, 'Live venue search is not connected yet. Try the sample experience.');
@@ -89,16 +93,33 @@ export function createApp(store) {
   app.post('/api/outings/:id/interpret', async (req, res) => {
     const { group } = await load(req); unlocked(group);
     const input = z.object({ text: z.string().trim().min(1).max(2000), defaults: preferenceSchema, consent: z.literal(true) }).parse(req.body);
-    try { res.json({ draft: await extractPreferences(input.text, input.defaults) }); }
+    try { res.json({ draft: await runInterpretation(input) }); }
     catch { throw fail(503, 'AI interpretation is unavailable or returned an invalid draft. Use the controls to enter your preferences.'); }
   });
   app.post('/api/outings/:id/discover', async (req, res) => {
     const { group, member } = await load(req); unlocked(group);
     if (!member.host) throw fail(403, 'Only the organiser can find options.');
     if (group.members.some(m => !m.preferences)) throw fail(409, 'Wait until everyone has saved their preferences.');
+    if (process.env.TEMPORAL_ADDRESS || options.enqueueDiscovery) {
+      if (group.discovery?.status === 'queued') {
+        try { await (options.enqueueDiscovery || enqueueDiscovery)({ outingId: group.id, jobId: group.discovery.id, version: group.version }); }
+        catch { throw fail(503, 'The background service is unavailable. Retry shortly.'); }
+        return res.status(202).json(publicState(group, member));
+      }
+      reset(group);
+      group.discovery = { id: token().slice(0, 24), status: 'queued', startedAt: new Date().toISOString() };
+      await save(group);
+      try { await (options.enqueueDiscovery || enqueueDiscovery)({ outingId: group.id, jobId: group.discovery.id, version: group.version }); }
+      catch {
+        const latest = await store.get(group.id);
+        if (latest.discovery?.id === group.discovery.id) { latest.discovery.status = 'failed'; await store.save(latest, latest.revision); }
+        throw fail(503, 'The background job could not start. Your preferences are saved; try again.');
+      }
+      return res.status(202).json(publicState(group, member));
+    }
     const preferences = group.members.map(m => m.preferences);
     let candidates;
-    try { candidates = group.mode === 'sample' ? sampleCandidates(preferences) : await discoverLive(group.city, preferences, process.env.SERPAPI_API_KEY); }
+    try { candidates = await runDiscovery({ city: group.city, mode: group.mode, preferences }); }
     catch { throw fail(503, 'Venue search is unavailable. Your group is saved; try again shortly.'); }
     // Saving with the original revision prevents stale async results overwriting changed preferences.
     reset(group); group.candidates = candidates; await save(group); res.json(publicState(group, member));
@@ -109,6 +130,27 @@ export function createApp(store) {
     if (input.version !== group.version || !group.candidates.some(c => c.id === input.candidateId)) throw fail(409, 'These options have changed. Refresh before voting.');
     if (!member.preferences) throw fail(409, 'Save your preferences before voting.');
     member.vote = input.candidateId; await save(group); res.json(publicState(group, member));
+  });
+  // Authenticate before reading a multipart body, bound memory, require explicit
+  // consent, and return only an unsaved draft to the requesting member.
+  const audioUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024, files: 1, fields: 1, parts: 2 },
+    fileFilter: (req, file, done) => done(null, ['audio/mpeg', 'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/mp4', 'audio/ogg'].includes(file.mimetype)) }).single('audio');
+  app.post('/api/outings/:id/transcribe', async (req, res, next) => {
+    const { group } = await load(req); unlocked(group);
+    if (!process.env.ELEVENLABS_API_KEY) throw fail(503, 'Voice input is not connected yet.');
+    audioUpload(req, res, error => {
+      if (error) return next(fail(400, 'Choose one audio file smaller than 5 MB.'));
+      if (!req.file || req.body.consent !== 'true') return next(fail(400, 'Choose an audio file and agree to send it for transcription.'));
+      transcribeAudio(req.file).then(text => res.json({ text }), () => next(fail(503, 'Transcription is unavailable. Type your preferences instead.')));
+    });
+  });
+  app.post('/api/outings/:id/speak', async (req, res) => {
+    const { group } = await load(req);
+    z.object({ consent: z.literal(true) }).parse(req.body);
+    const candidate = group.candidates.find(c => c.id === group.decision?.candidateId);
+    if (!candidate) throw fail(409, 'Confirm the outing before creating an audio invitation.');
+    try { res.type('audio/mpeg').send(await speakInvitation(group, candidate)); }
+    catch { throw fail(503, 'Audio invitations are unavailable. Use the calendar invite instead.'); }
   });
   app.post('/api/outings/:id/confirm', async (req, res) => {
     const { group, member } = await load(req);
