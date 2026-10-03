@@ -1,0 +1,4 @@
+# Separate optional environment; not needed for the app or Tinker experiment.
+tabpfn-client
+pandas
+scikit-learn
