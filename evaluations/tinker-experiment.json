@@ -1,0 +1,327 @@
+{
+  "model": "Qwen/Qwen3-8B",
+  "dataset": "synthetic; 24 train, 6 held-out",
+  "baseline": {
+    "exact_accuracy": 0.0,
+    "field_accuracy": 0.6666666666666666,
+    "cases": [
+      {
+        "text": "Coffee please, five hundred rupees tops. Six to nine in the evening. Needs to be quiet.",
+        "expected": {
+          "budget": 500,
+          "start": 1080,
+          "end": 1260,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 500,
+          "start": 1800,
+          "end": 2100,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": false
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 3.281
+      },
+      {
+        "text": "Board games? I can do 5:30 pm until 8:30 pm. Cap my spend at Rs 425, and I need step-free entry.",
+        "expected": {
+          "budget": 425,
+          "start": 1050,
+          "end": 1230,
+          "interests": [
+            "games"
+          ],
+          "quiet": false,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 425,
+          "start": 1730,
+          "end": 2030,
+          "interests": [
+            "games"
+          ],
+          "quiet": false,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 3.281
+      },
+      {
+        "text": "Dinner is my only preference. Keep it under 650 INR; available 19:00-22:00.",
+        "expected": {
+          "budget": 650,
+          "start": 1140,
+          "end": 1320,
+          "interests": [
+            "food"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 650,
+          "start": 1900,
+          "end": 2200,
+          "interests": [
+            "food"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 3.281
+      },
+      {
+        "text": "Let us walk outside between 4 pm and 7 pm. Zero budget. Must be quiet and step free.",
+        "expected": {
+          "budget": 0,
+          "start": 960,
+          "end": 1140,
+          "interests": [
+            "outdoors"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 0,
+          "start": 1600,
+          "end": 1900,
+          "interests": [
+            "outdoors"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 2.094
+      },
+      {
+        "text": "Art gallery for me. Can spend 275 rupees, available from 18:15 to 21:15.",
+        "expected": {
+          "budget": 275,
+          "start": 1095,
+          "end": 1275,
+          "interests": [
+            "art"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 275,
+          "start": 1815,
+          "end": 2115,
+          "interests": [
+            "art"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 2.094
+      },
+      {
+        "text": "Just coffee. 7 pm to 10 pm. My limit is 325 rupees. A quiet venue with no steps is essential.",
+        "expected": {
+          "budget": 325,
+          "start": 1140,
+          "end": 1320,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 325,
+          "start": 1900,
+          "end": 2200,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 2.079
+      }
+    ]
+  },
+  "training_started": true,
+  "optimizer_steps": 3,
+  "checkpoint": "tinker://fdfc2924-9c8f-5006-acae-a172cb5121ee:train:0/sampler_weights/sidequest-extraction-v1",
+  "tuned": {
+    "exact_accuracy": 0.3333333333333333,
+    "field_accuracy": 0.7222222222222222,
+    "cases": [
+      {
+        "text": "Coffee please, five hundred rupees tops. Six to nine in the evening. Needs to be quiet.",
+        "expected": {
+          "budget": 500,
+          "start": 1080,
+          "end": 1260,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 500,
+          "start": 1020,
+          "end": 1260,
+          "quiet": true
+        },
+        "exact": false,
+        "field_matches": 3,
+        "latency_seconds": 4.109
+      },
+      {
+        "text": "Board games? I can do 5:30 pm until 8:30 pm. Cap my spend at Rs 425, and I need step-free entry.",
+        "expected": {
+          "budget": 425,
+          "start": 1050,
+          "end": 1230,
+          "interests": [
+            "games"
+          ],
+          "quiet": false,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 425,
+          "start": 930,
+          "end": 1050,
+          "interests": [
+            "games"
+          ],
+          "quiet": false,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 4.109
+      },
+      {
+        "text": "Dinner is my only preference. Keep it under 650 INR; available 19:00-22:00.",
+        "expected": {
+          "budget": 650,
+          "start": 1140,
+          "end": 1320,
+          "interests": [
+            "food"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 650,
+          "start": 1140,
+          "end": 1320,
+          "interests": [
+            "food"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "exact": true,
+        "field_matches": 6,
+        "latency_seconds": 4.109
+      },
+      {
+        "text": "Let us walk outside between 4 pm and 7 pm. Zero budget. Must be quiet and step free.",
+        "expected": {
+          "budget": 0,
+          "start": 960,
+          "end": 1140,
+          "interests": [
+            "outdoors"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 0,
+          "start": 1200,
+          "end": 1800,
+          "interests": [],
+          "quiet": true,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 3,
+        "latency_seconds": 2.469
+      },
+      {
+        "text": "Art gallery for me. Can spend 275 rupees, available from 18:15 to 21:15.",
+        "expected": {
+          "budget": 275,
+          "start": 1095,
+          "end": 1275,
+          "interests": [
+            "art"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "prediction": {
+          "budget": 275,
+          "start": 1095,
+          "end": 1275,
+          "interests": [
+            "art"
+          ],
+          "quiet": false,
+          "stepFree": false
+        },
+        "exact": true,
+        "field_matches": 6,
+        "latency_seconds": 2.11
+      },
+      {
+        "text": "Just coffee. 7 pm to 10 pm. My limit is 325 rupees. A quiet venue with no steps is essential.",
+        "expected": {
+          "budget": 325,
+          "start": 1140,
+          "end": 1320,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "prediction": {
+          "budget": 325,
+          "start": 1020,
+          "end": 1200,
+          "interests": [
+            "coffee"
+          ],
+          "quiet": true,
+          "stepFree": true
+        },
+        "exact": false,
+        "field_matches": 4,
+        "latency_seconds": 2.469
+      }
+    ]
+  },
+  "exact_accuracy_delta": 0.3333333333333333,
+  "limitations": "Six synthetic cases are a smoke evaluation, not reliable generalisation evidence. No performance improvement is claimed without the measured delta."
+}
