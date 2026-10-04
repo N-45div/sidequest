@@ -1,87 +1,144 @@
 # SideQuest
 
-Private preferences. A shared decision. A study session your group can say yes to.
+**College study circles, with private preferences and one shared plan.**
 
-Independent new project for the Hacktoberfest Weekend Challenge. The current persona and sample circle are hypothetical, as requested; no real-friend validation or feedback is claimed.
+SideQuest helps classmates turn "we should revise together" into a time and place. Students share availability, study-space budgets and requirements privately, vote on a shortlist and confirm a session with a calendar invitation.
 
-## Working now
+[Live app](https://sidequest-lzrz.onrender.com) | [Architecture](ARCHITECTURE.md) | [Testing](TESTING.md) | [Sponsor evidence](SPONSORS.md)
 
-- Create a study circle and invite people through a shared link.
-- Separate participant sessions with server-side authorization.
-- Save exact budgets, availability, interests, quiet-place and step-free requirements privately.
-- Filter and rank clearly labelled illustrative study spaces without external accounts.
-- Vote, confirm once, and download an IST-aware calendar entry.
-- Invalidate old candidates and votes when preferences or membership change.
-- Persist local development data in SQLite; use MongoDB Atlas when configured.
-- SerpApi Google Maps discovery executed with real Bengaluru venues; source links and unresolved requirements remain visible. Optional Gemma extraction still needs an endpoint.
-- Tinker connectivity verified; actual bounded fine-tuning experiment completed. Exact JSON matches improved from 0/6 to 2/6 synthetic cases; this remains too unreliable for production. See [evaluations](evaluations/README.md).
-- Mastra discovery and model interpretation workflows; discovery executed locally.
-- Temporal queued discovery and separate worker. A real local Temporal server recovered a persisted retry after worker replacement.
-- Consent-based voice-note uploads, reviewable transcription drafts and confirmed audio invitations. Browser flows tested with provider fixtures; live ElevenLabs access is pending.
-- Sentry spans with strict export redaction, optional Tiger Data hybrid retrieval and authenticated inference deployment files. See [integration setup](infra/README.md).
+## How a circle works
 
-Live app: **https://sidequest-lzrz.onrender.com**. Render serves the frontend and API with durable MongoDB Atlas storage. Public API checks verify joining, privacy, voting, confirmation and calendar download. Submission preparation continues. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
+```mermaid
+flowchart LR
+    A[Create a study circle] --> B[Invite classmates]
+    B --> C[Save private preferences]
+    C --> D[Find study spaces]
+    D --> E[Vote on a shortlist]
+    E --> F[Organiser confirms]
+    F --> G[Download calendar invite]
+```
+
+1. Name the session, such as **Data structures revision**, and choose a city/date.
+2. Share the invite link. Each student joins with a separate participant session.
+3. Save a budget in INR, availability, preferred space types, quietness and step-free requirements.
+4. The organiser finds options once everyone has saved preferences.
+5. Students vote; the organiser acknowledges unresolved details and confirms an option.
+6. Download an ICS invitation. Times currently use **Asia/Kolkata**.
+
+Changing preferences or membership clears earlier options and votes. Confirmation locks further planning changes.
+
+## Try it
+
+**Explore a sample circle** opens a fictional revision group with illustrative library, campus and study-cafe concepts. It works without search or model credentials.
+
+**Live study spaces** searches SerpApi Google Maps for libraries, campus study rooms, study cafes, coworking spaces and outdoor study spots. Cards include Maps links; API data includes retrieval timestamps. Hosted live mode requires `SERPAPI_API_KEY` and persistent storage.
+
+Live prices, hours, noise, campus visitor eligibility, travel time and group-discussion suitability are unverified. Unknown facts remain unknown; a shortlist is not a booking or a guarantee of access.
+
+## Current release
+
+| Area | Executed evidence |
+| --- | --- |
+| Render | Public React frontend and Express API deployed together |
+| MongoDB Atlas | Real writes/read-back, participant isolation and persistence across redeployment |
+| SerpApi + Mastra | Real public library discovery through the discovery workflow |
+| Core correctness | 18 automated tests, build and Actions passed for the study-circle release |
+| Browser | New public homepage/revision shortlist checked; earlier full desktop/mobile flows recorded |
+| Temporal | Official local server recovered a persisted retry after worker replacement |
+| Tinker | Qwen3-8B experiment: exact extraction improved from 0/6 to 2/6 synthetic cases; outside production |
+
+[Evaluation reports](evaluations/README.md) record provenance and limits. Prepared adapters do not imply completed connections. Gemma, ElevenLabs, Sentry cloud tracing, Tiger Data, Backboard, TabPFN and hosted Temporal remain conditional. Entire is installed locally; capture needs hook trust review and a reviewed session. Hardware is outside active release scope.
 
 ## Run locally
 
-Requires Node 24 or later.
+Requirements: **Node.js 24+**, npm and Git. Run commands from this repository directory.
 
 ```powershell
+git clone https://github.com/N-45div/sidequest.git
+cd sidequest
 npm ci
+Copy-Item .env.example .env
 npm run build
 npm start
 ```
 
-Open http://localhost:3100. For frontend development, run `npm run server` and `npm run dev` in separate terminals, then use http://localhost:5174.
+If `.env` exists, keep it and edit only needed settings. Blank `MONGODB_URI` with `NODE_ENV=development` uses SQLite at `.data/sidequest.db`. Open **http://localhost:3100**.
 
-Participant credentials are stored in sessionStorage on the joining device. Share the invite link, not your private credential. A different device/tab session may require rejoining; credential recovery is not implemented yet.
-
-## Checks
+For frontend development, run these in separate terminals:
 
 ```powershell
-npm test
-node scripts/browser-check.mjs
-node scripts/voice-ui-check.mjs
-npm run check:temporal
+# Terminal 1: API
+npm run server
 ```
-
-The browser checks require installed Google Chrome and a running app on port 3100. They cover desktop and mobile flows, independent participant sessions, preference updates, voting, confirmation, calendar download, refresh and overflow. The voice check uses explicit provider fixtures to test consent and review without credentials. Screenshots go into ignored `artifacts/`. The Temporal check runs the official local test server and records actual recovery results; it does not use Temporal Cloud.
-
-## Render deployment
-
-`render.yaml` defines a Node web service serving the built frontend and API together. The server binds `0.0.0.0` and Render's `PORT`.
-
-1. Publish this independent repository to your GitHub account.
-2. Create a Render Blueprint using this repository.
-3. Configure `MONGODB_URI` for your Atlas database in Render secrets, with suitable network access and least-privilege database credentials. No credential belongs in git.
-4. For live search, configure `SERPAPI_API_KEY`. For Gemma inference, configure `GEMMA_BASE_URL`, `GEMMA_API_KEY` where required, and `GEMMA_MODEL`.
-5. Verify `/api/health`, create/join from separate devices, privacy isolation, and calendar download on the actual public URL.
-
-Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. The public deployment is active with Atlas and the disposable-preview flag disabled.
-
-An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live study sessions and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
-
-## SerpApi India Hackathon
-
-SideQuest targets Travel & Local Discovery. See [entry draft and local demo checklist](submission/SERPAPI_DRAFT.md). The SerpApi credential stays in the ignored local environment and Render secrets; never put it in a frontend bundle. Live mode searches real venues, while the sample mode remains fictional.
-
-## Tinker experiment
-
-Use an isolated Python virtual environment. The local ignored `.env` contains the user-supplied Tinker credential; never print or commit it.
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install tinker pyserial
-.\.venv\Scripts\python.exe scripts\tinker_check.py
-.\.venv\Scripts\python.exe scripts\tinker_experiment.py --train
+# Terminal 2: frontend
+npm run dev
 ```
 
-The experiment is bounded to Qwen3-8B, rank 8, three optimizer steps, 24 synthetic training cases, and six distinct held-out synthetic cases. It records baseline/tuned field and exact-match scores and a checkpoint. This is a smoke evaluation, not evidence of general usefulness. Results can show no improvement; do not claim otherwise. Training/sampling use provider credits or incur provider usage charges.
+Open **http://localhost:5174**. Vite forwards API requests to port 3100. `npm start` serves the last built frontend; rebuild after UI changes.
 
-## Boundaries
+## Configuration
 
-Live search prices, date-specific hours, travel time, quietness, and step-free access currently remain unverified. Model interpretation requires explicit provider-processing consent and participant review. Typed controls work without AI.
+Copy names from [.env.example](.env.example). Put values in ignored `.env` locally and Render secret settings. Server credentials must not appear in frontend code or `VITE_*` variables.
 
-Hypothetical people and demo study-space facts are labelled. The challenge asks for a real friend or loved one; a real recipient and actual feedback remain outstanding submission work.
+| Settings | Purpose |
+| --- | --- |
+| `PORT`, `NODE_ENV` | HTTP port/storage guard; local defaults are 3100/development |
+| `MONGODB_URI`, `MONGODB_DATABASE` | Atlas storage; database defaults to `sidequest` |
+| `SERPAPI_API_KEY` | Live study-space discovery |
+| `GEMMA_BASE_URL`, `GEMMA_MODEL`, `GEMMA_API_KEY` | Optional compatible model endpoint for consented preference drafts |
+| `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_API_KEY` | Optional queueing with a separate worker |
+| `TIGER_DATABASE_URL`, `EMBEDDING_*` | Optional hybrid venue corpus |
+| `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` | Optional transcription and confirmed audio invitations |
+| `SENTRY_DSN` | Optional explicitly redacted tracing |
+| `TINKER_API_KEY`, `BACKBOARD_*` | Separate evaluation scripts |
+| `RENDER_API_KEY` | Local deployment helper only; keep out of the web runtime |
 
-This project does not include Parallel source, assets, interface, conference allocation, or conference briefing logic. The main workflow is private group preferences and collaborative study-circle decisions.
+Capabilities reflect configuration presence, not provider health. Typed controls/sample discovery work without a model. [Integration instructions](infra/README.md) cover optional services and evaluation prerequisites.
+
+## Deploy on Render
+
+[render.yaml](render.yaml) builds with `npm ci --include=dev && npm run build`, starts with `npm start` and checks `/api/health`. Express listens on `0.0.0.0` using Render's `PORT`.
+
+1. Connect the public repository in Render and use `render.yaml`.
+2. Set Atlas URI/database secrets and allow the service's actual outbound addresses in Atlas.
+3. Set `SERPAPI_API_KEY` for live discovery. Keep `ALLOW_EPHEMERAL_DEMO=false` for durable hosting.
+4. Deploy, inspect health/capabilities and run the public checks in [TESTING.md](TESTING.md).
+
+Production refuses to start without MongoDB unless disposable preview mode is explicit. [render-preview.yaml](render-preview.yaml) uses memory, disables live circles and displays a reset notice. Preview records disappear on restart.
+
+The existing helper targets only the known SideQuest service; these commands need its ignored `artifacts/render-service.json` state:
+
+```powershell
+python scripts/render-deploy.py --status
+python scripts/render-deploy.py --redeploy
+```
+
+`--redeploy` pins current Git HEAD; push that commit first. A new clone has no service-state artifact. Connect your service through the dashboard/blueprint instead of assuming local state is portable. A Temporal worker is a separate deployment; see [infra/README.md](infra/README.md).
+
+## Privacy and decision boundaries
+
+- The invite URL lets someone join and contains no organiser credential. Share only that URL.
+- The browser keeps a participant credential in `sessionStorage`; storage holds its SHA-256 hash. The server can read preferences, but peers cannot fetch each other's exact fields.
+- Sessions are not accounts. Closing a browser session, clearing storage or switching devices can lose access; recovery is not implemented. Circles have an eight-person limit.
+- SerpApi receives city/space-type queries, not identities or budgets. Model/voice processing requires consent and draft review.
+- The organiser chooses the final plan. There is no automatic majority decision, attendance prediction, university identity verification or campus booking integration.
+
+## Repository guide
+
+| Path | Contents |
+| --- | --- |
+| `src/` | React interface and responsive styles |
+| `server/` | API, stores, planner, workflows and optional adapters |
+| `tests/` | Deterministic API, integration, storage and study-space checks |
+| `scripts/` | Public/local browser checks, deployment and evaluations |
+| `infra/` | Optional inference, corpus and worker deployment instructions |
+| `evaluations/` | Actual executed evidence; no credentials |
+| `submission/` | Drafts, walkthrough and remaining release checklist |
+
+## Submission material
+
+[DEV post](submission/DEV_POST_BODY.md) | [SerpApi entry](submission/SERPAPI_DRAFT.md) | [Demo walkthrough](submission/DEMO_WALKTHROUGH.md) | [Remaining work](submission/RELEASE_CHECKLIST.md)
+
+The recipient and sample students are hypothetical; no real-friend feedback is claimed. Hacktoberfest's real-recipient story remains outstanding. The SerpApi entry needs its local demo video and participant details. Neither draft has been published/submitted. SideQuest is independent, with no Parallel source or assets.
