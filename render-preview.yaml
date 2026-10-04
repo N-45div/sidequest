@@ -1,3 +1,4 @@
+# Explicit disposable preview. Use render.yaml with Atlas for durable hosting.
 services:
   - type: web
     name: sidequest
@@ -12,15 +13,5 @@ services:
         value: production
       - key: NODE_VERSION
         value: 24.11.1
-      - key: MONGODB_URI
-        sync: false
-      - key: MONGODB_DATABASE
-        value: sidequest
-      - key: GEMMA_BASE_URL
-        sync: false
-      - key: GEMMA_API_KEY
-        sync: false
-      - key: GEMMA_MODEL
-        sync: false
-      - key: SERPAPI_API_KEY
-        sync: false
+      - key: ALLOW_EPHEMERAL_DEMO
+        value: 'true'

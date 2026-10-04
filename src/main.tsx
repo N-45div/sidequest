@@ -20,7 +20,7 @@ function App() {
   const [outing, setOuting] = useState<Outing | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [route, setRoute] = useState(() => location.pathname.match(/^\/q\/([a-f0-9]+)$/)?.[1] || '');
-  const [capabilities, setCapabilities] = useState({ ai: false, liveSearch: false, voiceInput: false, voiceOutput: false });
+  const [capabilities, setCapabilities] = useState({ ai: false, liveSearch: false, voiceInput: false, voiceOutput: false, temporaryPreview: false });
   const [loading, setLoading] = useState(!!route);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -108,6 +108,7 @@ function App() {
       <header className="topbar"><div className="mobile-brand"><Zap size={18} /> sidequest.</div><span className="breadcrumb">Your people. One good plan.</span><span className="edition">WEEKEND EDITION <span>✦</span></span></header>
       {error && <div className="message error" role="alert">{error}<button onClick={() => setError('')} aria-label="Dismiss error"><X size={18} /></button></div>}
       {notice && <div className="message success" role="status">{notice}</div>}
+      {capabilities.temporaryPreview && <div className="sample-banner" role="status"><Sparkles size={17} /><span><strong>Temporary preview.</strong> Sample activities only. Groups and invite links clear when this service restarts. Avoid using this preview for plans you need to keep.</span></div>}
 
       {loading && !outing ? <div className="loading"><LoaderCircle className="spin" /> Opening your outing…</div> : outing ? <>
         <section className="room-heading">

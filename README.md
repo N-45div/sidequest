@@ -60,6 +60,8 @@ The browser checks require installed Google Chrome and a running app on port 310
 
 Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. No live deployment has been created yet.
 
+An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live outings and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
+
 ## Tinker experiment
 
 Use an isolated Python virtual environment. The local ignored `.env` contains the user-supplied Tinker credential; never print or commit it.

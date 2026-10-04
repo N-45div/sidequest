@@ -52,9 +52,10 @@ export function createApp(store, options = {}) {
   const memberRecord = (name, host = false) => { const credential = token(); return { credential, member: { id: token().slice(0, 16), name, host, tokenHash: digest(credential), preferences: null, vote: null } }; };
 
   app.get('/api/health', (req, res) => res.json({ ok: true, storage: store.kind }));
-  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID) }));
+  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !store.ephemeral && !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID), temporaryPreview: !!store.ephemeral }));
   app.post('/api/outings', async (req, res) => {
     const input = createSchema.parse(req.body);
+    if (store.ephemeral && input.mode === 'live') throw fail(503, 'Live outings need persistent storage. This preview supports sample activities only.');
     if (input.mode === 'live' && !process.env.SERPAPI_API_KEY) throw fail(503, 'Live venue search is not connected yet. Try the sample experience.');
     const { credential, member } = memberRecord(input.name, true);
     const group = { id: token().slice(0, 24), revision: 0, title: input.title, city: input.city, date: input.date, mode: input.mode, version: 0, members: [member], candidates: [], decision: null };
@@ -100,7 +101,7 @@ export function createApp(store, options = {}) {
     const { group, member } = await load(req); unlocked(group);
     if (!member.host) throw fail(403, 'Only the organiser can find options.');
     if (group.members.some(m => !m.preferences)) throw fail(409, 'Wait until everyone has saved their preferences.');
-    if (process.env.TEMPORAL_ADDRESS || options.enqueueDiscovery) {
+    if (!store.ephemeral && (process.env.TEMPORAL_ADDRESS || options.enqueueDiscovery)) {
       if (group.discovery?.status === 'queued') {
         try { await (options.enqueueDiscovery || enqueueDiscovery)({ outingId: group.id, jobId: group.discovery.id, version: group.version }); }
         catch { throw fail(503, 'The background service is unavailable. Retry shortly.'); }
