@@ -13,7 +13,7 @@ export const preferenceSchema = z.object({
 const activities = [
   { name: 'Library revision session', subtitle: 'Quiet individual work with a shared revision break.', category: 'library', cost: 0, duration: 90, quiet: true, stepFree: true, tone: 'library' },
   { name: 'Campus problem-solving circle', subtitle: 'Work through a problem set with your classmates.', category: 'campus', cost: 0, duration: 120, quiet: true, stepFree: true, tone: 'campus' },
-  { name: 'Study caf? session', subtitle: 'Compare notes over a drink after lectures.', category: 'coffee', cost: 150, duration: 90, quiet: true, stepFree: true, tone: 'coffee' },
+  { name: 'Study cafe session', subtitle: 'Compare notes over a drink after lectures.', category: 'coffee', cost: 150, duration: 90, quiet: true, stepFree: true, tone: 'coffee' },
   { name: 'Shared coworking study desk', subtitle: 'A desk for a focused group revision session.', category: 'coworking', cost: 300, duration: 120, quiet: true, stepFree: true, tone: 'coworking' },
   { name: 'Outdoor flashcard review', subtitle: 'A short peer quiz in an open study spot.', category: 'outdoors', cost: 0, duration: 90, quiet: false, stepFree: false, tone: 'outdoors' },
 ];

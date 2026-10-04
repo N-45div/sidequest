@@ -8,7 +8,7 @@ type Candidate = { id: string; name: string; subtitle: string; category: string;
 type Outing = { id: string; title: string; city: string; date: string; mode: 'sample' | 'live'; version: number; discovery: { status: 'queued' | 'complete' | 'failed' } | null; participants: { id: string; name: string; ready: boolean; voted: boolean }[]; candidates: Candidate[]; observations: { venue: string; board: string; peakToPeak: number; observedAt: string }[]; decision: { candidateId: string } | null; me: { id: string; name: string; host: boolean; preferences: Preferences | null; vote: string | null } };
 type Preview = { title: string; city: string; date: string; mode: string; closed: boolean };
 const icons: Record<string, typeof Coffee> = { coffee: Coffee, library: BookOpen, campus: GraduationCap, coworking: Laptop, outdoors: Trees, art: BookOpen, food: Coffee, games: Laptop };
-const interestLabels: Record<string, string> = { library: 'Library', campus: 'Campus study space', coffee: 'Study caf?', coworking: 'Coworking space', outdoors: 'Outdoor study spot' };
+const interestLabels: Record<string, string> = { library: 'Library', campus: 'Campus study space', coffee: 'Study cafe', coworking: 'Coworking space', outdoors: 'Outdoor study spot' };
 const defaults: Preferences = { budget: 150, start: 1020, end: 1320, interests: ['library', 'campus'], quiet: true, stepFree: false };
 const formatTime = (minutes: number) => new Date(2000, 0, 1, 0, minutes).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' });
 const timeValue = (minutes: number) => `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;

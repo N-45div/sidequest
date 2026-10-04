@@ -16,7 +16,7 @@ I started with a hypothetical friend who ends up organising every study session.
 
 For a quick look, choose **Explore a sample circle**. Save your preferences, find options, vote and confirm a pick. You can download a calendar invitation at the end.
 
-To find real places to study, create a study circle and choose **Live study spaces**. SerpApi searches for libraries, campus study rooms, study caf?s and coworking spaces according to the circle?s preferences. Campus entry and suitability for group discussion still need checking.
+To find real places to study, create a study circle and choose **Live study spaces**. SerpApi searches for libraries, campus study rooms, study cafes and coworking spaces according to the circle's preferences. Campus entry and suitability for group discussion still need checking.
 
 Those are search results, not promises. Prices, date-specific opening hours, noise and step-free access still need checking. The cards keep those gaps visible rather than pretending every place meets every requirement.
 

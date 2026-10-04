@@ -9,7 +9,7 @@ Independent new project for the Hacktoberfest Weekend Challenge. The current per
 - Create a study circle and invite people through a shared link.
 - Separate participant sessions with server-side authorization.
 - Save exact budgets, availability, interests, quiet-place and step-free requirements privately.
-- Filter and rank clearly labelled illustrative activities without external accounts.
+- Filter and rank clearly labelled illustrative study spaces without external accounts.
 - Vote, confirm once, and download an IST-aware calendar entry.
 - Invalidate old candidates and votes when preferences or membership change.
 - Persist local development data in SQLite; use MongoDB Atlas when configured.
