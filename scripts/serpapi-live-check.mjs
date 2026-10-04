@@ -11,9 +11,9 @@ const request = async (path, method = 'GET', body, credential) => {
 };
 assert.equal((await request('/capabilities')).liveSearch, true);
 const date = new Date(Date.now()+86400000).toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
-const host = await request('/outings','POST',{title:'Live search verification',city:'Bengaluru',date,name:'Test organiser',mode:'live'});
+const host = await request('/outings','POST',{title:'College study-space verification',city:'Bengaluru',date,name:'Test organiser',mode:'live'});
 const path = `/outings/${host.outing.id}`;
-await request(`${path}/preferences`,'PUT',{budget:500,start:1020,end:1320,interests:['coffee'],quiet:true,stepFree:true},host.credential);
+await request(`${path}/preferences`,'PUT',{budget:500,start:1020,end:1320,interests:['library'],quiet:true,stepFree:true},host.credential);
 const result = await request(`${path}/discover`,'POST',{},host.credential);
 assert.ok(result.candidates.length > 0);
 for (const candidate of result.candidates) {
@@ -23,7 +23,7 @@ for (const candidate of result.candidates) {
   assert.ok(candidate.retrievedAt && candidate.uncertainties.length);
 }
 await writeFile('evaluations/serpapi-live.json',JSON.stringify({recordedAt:new Date().toISOString(),url:base,
-  engine:'google_maps',workflow:'Mastra sidequest-discovery',city:'Bengaluru',
+  purpose:'College study-circle venue discovery',engine:'google_maps',workflow:'Mastra sidequest-discovery',city:'Bengaluru',
   provenance:'Actual public Render execution with fictional test organiser; venue results came from SerpApi',
   checks:['live capability enabled','live outing created','private preferences saved','actual search produced source-linked venues','unknown cost/noise/access remain unknown'],
   candidates:result.candidates.map(({name,source,retrievedAt,uncertainties})=>({name,source,retrievedAt,uncertainties}))},null,2)+'\n');

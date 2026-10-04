@@ -6,7 +6,7 @@ Submission deadline: October 5, 2026, 12:29 PM IST.
 
 ## Current scope
 
-Make a group outing happen without publishing each person's exact spending limit or requirements. Create an outing, invite friends, save private preferences, find feasible options, vote, confirm and download an IST-aware calendar entry.
+Make a college study circle happen without publishing each student's exact spending limit or requirements. Create a study circle, invite friends, save private preferences, find feasible options, vote, confirm and download an IST-aware calendar entry.
 
 The user chose a hypothetical persona. Fictional sample people and prices remain labelled; no real recipient or feedback is claimed. The challenge's real-person story remains outstanding. Hardware and Arduino sponsor work are excluded from the active delivery scope at the user's request.
 
@@ -41,7 +41,7 @@ Current implementations and evidence are recorded in SPONSORS.md. Only verified 
 - Public page and health endpoint respond successfully.
 - Host and guest can join from separate sessions, save different preferences and vote without reading each other's private fields.
 - Invalid dates/ranges, outsider credentials, stale votes and conflicting updates are rejected.
-- Restarting the Atlas-backed app retains the outing; temporary preview always discloses that it does not.
+- Restarting the Atlas-backed app retains the study session; temporary preview always discloses that it does not.
 - Known constraint conflicts produce a recoverable empty shortlist.
 - Calendar download has the correct IST conversion; mobile has no horizontal overflow or runtime errors.
 - Each final category claim has real evidence, and deployment/persistence limitations are stated accurately.

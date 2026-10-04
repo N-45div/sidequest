@@ -1,5 +1,5 @@
 ---
-title: "SideQuest: getting the group plan out of the chat"
+title: "SideQuest: getting the college study circle out of the chat"
 published: false
 tags: devchallenge, weekendchallenge, hf26challenge
 ---
@@ -8,25 +8,25 @@ tags: devchallenge, weekendchallenge, hf26challenge
 
 ## What I Built
 
-There is a familiar kind of group chat that starts with "we should hang out" and ends with everyone waiting for someone else to choose a place.
+A college study group can agree to revise together and still spend the rest of the evening figuring out when everyone is free and where to sit.
 
-SideQuest gives that conversation somewhere to go. One person creates an outing and shares a link. Everyone adds their budget, available time, interests and requirements privately. The group gets a shortlist, votes, and settles on one plan they can save to their calendars.
+SideQuest helps classmates turn that conversation into a session. A student creates a study circle and shares a link. Each student adds their study-space budget, available time, preferred kind of space and requirements privately. The group gets a shortlist, votes, and settles on one plan they can save to their calendars.
 
 The detail I kept coming back to was the budget. Someone should be able to say "this is what I can spend" without announcing the exact number to the whole group. Other participants see readiness, options and votes. Each person's exact saved preferences stay in their own session.
 
-I started with a hypothetical friend who ends up organising every catch-up. I haven't named a real recipient or collected their feedback yet, so I can't honestly claim that part of the theme is complete. The sample group is fictional too, and the app says so. The working product is ready to hand to someone; that real-person story still needs to happen before I call this a finished challenge entry.
+I started with a hypothetical friend who ends up organising every study session. I haven't named a real recipient or collected their feedback yet, so I can't honestly claim that part of the theme is complete. The sample circle is fictional too, and the app says so. The working product helps students coordinate a study circle; that real-person story still needs to happen before I call this a finished challenge entry.
 
 ## Demo
 
 [Open SideQuest](https://sidequest-lzrz.onrender.com)
 
-For a quick look, choose **Explore a sample group**. Save your preferences, find options, vote and confirm a pick. You can download a calendar invitation at the end.
+For a quick look, choose **Explore a sample circle**. Save your preferences, find options, vote and confirm a pick. You can download a calendar invitation at the end.
 
-To try actual venue discovery, create an outing and choose **Live venues**. SerpApi returns Google Maps results. In the public test, that included Dyu Art Cafe, The Hole In The Wall Cafe and Matteo Coffea in Bengaluru.
+To find real places to study, create a study circle and choose **Live study spaces**. SerpApi searches for libraries, campus study rooms, study caf?s and coworking spaces according to the circle?s preferences. Campus entry and suitability for group discussion still need checking.
 
 Those are search results, not promises. Prices, date-specific opening hours, noise and step-free access still need checking. The cards keep those gaps visible rather than pretending every place meets every requirement.
 
-Render hosts the app and API. MongoDB Atlas stores the plans. I confirmed an outing, redeployed the app, and read the same decision back afterwards.
+Render hosts the app and API. MongoDB Atlas stores the plans. I confirmed a study session, redeployed the app, and read the same decision back afterwards.
 
 ## Code
 

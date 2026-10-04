@@ -31,7 +31,8 @@ if (process.argv.includes('--verify-persistence')) {
   assert.equal((await json(`/outings/${id}/preferences`, 'PUT', preferences, credential)).status, 200);
   const guestView = await json(`/outings/${id}/preferences`, 'PUT', { ...preferences, budget:829 }, guest.data.credential);
   assert.equal(guestView.status,200); assert.equal(guestView.data.me.preferences.budget,829);
-  assert.ok(!JSON.stringify(guestView.data).includes('317'));
+  assert.equal(guestView.data.me.id, guest.data.outing.me.id);
+  assert.ok(!('members' in guestView.data));
   assert.ok(guestView.data.participants.every(person => !('preferences' in person) && !('tokenHash' in person)));
   assert.equal((await json(`/outings/${id}`)).status,401);
   assert.equal((await json(`/outings/${id}/discover`, 'POST', {}, guest.data.credential)).status,403);

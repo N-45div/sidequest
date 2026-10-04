@@ -3,3 +3,5 @@
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}@media(forced-colors:active){.candidate-card.selected,.interest.chosen{outline:2px solid Highlight}.button{border:1px solid ButtonText}}
 
 .voice-controls{display:grid;gap:14px;margin:24px 0;padding:18px;border:1px solid var(--border);border-radius:12px;text-align:left}.voice-controls audio{width:100%;max-width:420px}.voice-controls small{display:block;margin-top:8px}
+
+.card-visual.library{background:#dbe7ed}.card-visual.campus{background:#e0e6ce}.card-visual.coworking{background:#e6ddee}

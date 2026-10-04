@@ -13,18 +13,18 @@ await page.route('**/interpret', route => { interpretations++; const body = rout
 await page.route('**/speak', route => { invitations++; assert.equal(route.request().postDataJSON().consent, true); return route.fulfill({ contentType: 'audio/mpeg', body: Buffer.from('fixture-not-real-audio') }); });
 try {
   await page.goto('http://127.0.0.1:3100');
-  await page.getByRole('button', { name: 'Explore a sample group' }).click();
+  await page.getByRole('button', { name: 'Explore a sample circle' }).click();
   await page.getByRole('button', { name: 'Your preferences', exact: true }).click();
   await page.getByLabel('Upload a short voice note (up to 5 MB)').setInputFiles({ name: 'note.wav', mimeType: 'audio/wav', buffer: Buffer.from('fixture') });
   assert.equal(await page.getByRole('button', { name: 'Transcribe, then review' }).isDisabled(), true);
   await page.getByLabel('Send this recording to ElevenLabs for transcription.').check();
   await page.getByRole('button', { name: 'Transcribe, then review' }).click();
   await page.waitForFunction(() => document.querySelector('textarea')?.value.includes('Coffee, under'));
-  assert.equal(await page.getByLabel('Maximum spend per person', { exact: true }).inputValue(), '600');
+  assert.equal(await page.getByLabel('Maximum study-space spend per person', { exact: true }).inputValue(), '600');
   assert.equal(await page.getByRole('button', { name: 'Interpret, then review' }).isDisabled(), true);
   await page.getByLabel('Send this text to the configured AI provider.').check();
   await page.getByRole('button', { name: 'Interpret, then review' }).click();
-  await page.waitForFunction(() => document.querySelector('input[aria-label="Maximum spend per person"]')?.value === '350');
+  await page.waitForFunction(() => document.querySelector('input[aria-label="Maximum study-space spend per person"]')?.value === '350');
   mkdirSync('artifacts', { recursive: true }); await page.screenshot({ path: 'artifacts/voice-mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'Save my preferences' }).click();
   await page.getByRole('button', { name: 'Find our options' }).click();

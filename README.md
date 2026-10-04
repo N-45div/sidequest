@@ -1,12 +1,12 @@
 # SideQuest
 
-Private preferences. A shared decision. An outing your group can say yes to.
+Private preferences. A shared decision. A study session your group can say yes to.
 
-Independent new project for the Hacktoberfest Weekend Challenge. The current persona and sample group are hypothetical, as requested; no real-friend validation or feedback is claimed.
+Independent new project for the Hacktoberfest Weekend Challenge. The current persona and sample circle are hypothetical, as requested; no real-friend validation or feedback is claimed.
 
 ## Working now
 
-- Create an outing and invite people through a shared link.
+- Create a study circle and invite people through a shared link.
 - Separate participant sessions with server-side authorization.
 - Save exact budgets, availability, interests, quiet-place and step-free requirements privately.
 - Filter and rank clearly labelled illustrative activities without external accounts.
@@ -59,7 +59,7 @@ The browser checks require installed Google Chrome and a running app on port 310
 
 Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. The public deployment is active with Atlas and the disposable-preview flag disabled.
 
-An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live outings and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
+An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live study sessions and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
 
 ## SerpApi India Hackathon
 
@@ -82,6 +82,6 @@ The experiment is bounded to Qwen3-8B, rank 8, three optimizer steps, 24 synthet
 
 Live search prices, date-specific hours, travel time, quietness, and step-free access currently remain unverified. Model interpretation requires explicit provider-processing consent and participant review. Typed controls work without AI.
 
-Hypothetical people and demo activity facts are labelled. The challenge asks for a real friend or loved one; a real recipient and actual feedback remain outstanding submission work.
+Hypothetical people and demo study-space facts are labelled. The challenge asks for a real friend or loved one; a real recipient and actual feedback remain outstanding submission work.
 
-This project does not include Parallel source, assets, interface, conference allocation, or conference briefing logic. The main workflow is private group preferences and collaborative outing decisions.
+This project does not include Parallel source, assets, interface, conference allocation, or conference briefing logic. The main workflow is private group preferences and collaborative study-circle decisions.

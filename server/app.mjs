@@ -40,14 +40,14 @@ export function createApp(store, options = {}) {
   });
   const load = async req => {
     const group = await store.get(req.params.id);
-    if (!group) throw fail(404, 'This outing could not be found.');
+    if (!group) throw fail(404, 'This study circle could not be found.');
     const auth = req.get('Authorization');
     const member = auth?.startsWith('Bearer ') ? group.members.find(m => m.tokenHash === digest(auth.slice(7))) : null;
-    if (!member) throw fail(401, 'Join this outing or use the device where you joined.');
+    if (!member) throw fail(401, 'Join this study circle or use the device where you joined.');
     return { group, member };
   };
   const save = async group => { if (!await store.save(group, group.revision)) throw fail(409, 'The group changed. Refresh and try again.'); };
-  const unlocked = group => { if (group.decision) throw fail(409, 'This outing is already confirmed. Start a new outing to change the plan.'); };
+  const unlocked = group => { if (group.decision) throw fail(409, 'This study circle is already confirmed. Start a new study circle to change the plan.'); };
   const reset = group => { group.version++; group.candidates = []; group.discovery = null; for (const m of group.members) m.vote = null; };
   const memberRecord = (name, host = false) => { const credential = token(); return { credential, member: { id: token().slice(0, 16), name, host, tokenHash: digest(credential), preferences: null, vote: null } }; };
 
@@ -55,7 +55,7 @@ export function createApp(store, options = {}) {
   app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !store.ephemeral && !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID), temporaryPreview: !!store.ephemeral }));
   app.post('/api/outings', async (req, res) => {
     const input = createSchema.parse(req.body);
-    if (store.ephemeral && input.mode === 'live') throw fail(503, 'Live outings need persistent storage. This preview supports sample activities only.');
+    if (store.ephemeral && input.mode === 'live') throw fail(503, 'Live study circles need persistent storage. This preview supports sample study spaces only.');
     if (input.mode === 'live' && !process.env.SERPAPI_API_KEY) throw fail(503, 'Live venue search is not connected yet. Try the sample experience.');
     const { credential, member } = memberRecord(input.name, true);
     const group = { id: token().slice(0, 24), revision: 0, title: input.title, city: input.city, date: input.date, mode: input.mode, version: 0, members: [member], candidates: [], decision: null };
@@ -64,10 +64,10 @@ export function createApp(store, options = {}) {
   });
   app.post('/api/demo', async (req, res) => {
     const { credential, member } = memberRecord('You', true);
-    const defaults = { budget: 600, start: 1020, end: 1320, interests: ['coffee', 'games'], quiet: false, stepFree: false };
+    const defaults = { budget: 600, start: 1020, end: 1320, interests: ['library', 'campus'], quiet: true, stepFree: false };
     member.preferences = defaults;
-    const group = { id: token().slice(0, 24), revision: 0, title: 'The overdue catch-up', city: 'Bengaluru', date: new Date(Date.now() + 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), mode: 'sample', version: 1, members: [member], candidates: [], decision: null };
-    for (const [name, patch] of [['Riya', { budget: 500, interests: ['coffee', 'art'] }], ['Kabir', { interests: ['games', 'coffee'] }], ['Ananya', { budget: 450, interests: ['art', 'coffee'], quiet: true }]]) {
+    const group = { id: token().slice(0, 24), revision: 0, title: 'Data structures revision', city: 'Bengaluru', date: new Date(Date.now() + 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }), mode: 'sample', version: 1, members: [member], candidates: [], decision: null };
+    for (const [name, patch] of [['Riya', { budget: 500, interests: ['library', 'coffee'] }], ['Kabir', { interests: ['campus', 'library'] }], ['Ananya', { budget: 450, interests: ['library', 'campus'], quiet: true }]]) {
       const other = memberRecord(name).member;
       other.preferences = { ...defaults, ...patch }; group.members.push(other);
     }
@@ -76,13 +76,13 @@ export function createApp(store, options = {}) {
     res.status(201).json({ credential, outing: publicState(group, member) });
   });
   app.get('/api/outings/:id/preview', async (req, res) => {
-    const group = await store.get(req.params.id); if (!group) throw fail(404, 'This outing could not be found.');
+    const group = await store.get(req.params.id); if (!group) throw fail(404, 'This study circle could not be found.');
     res.json({ title: group.title, city: group.city, date: group.date, mode: group.mode, closed: !!group.decision });
   });
   app.post('/api/outings/:id/join', async (req, res) => {
     const input = z.object({ name: nameSchema }).parse(req.body);
-    const group = await store.get(req.params.id); if (!group) throw fail(404, 'This outing could not be found.');
-    unlocked(group); if (group.members.length >= 8) throw fail(409, 'This outing has reached its eight-person limit.');
+    const group = await store.get(req.params.id); if (!group) throw fail(404, 'This study circle could not be found.');
+    unlocked(group); if (group.members.length >= 8) throw fail(409, 'This study circle has reached its eight-person limit.');
     const { credential, member } = memberRecord(input.name); group.members.push(member); reset(group); await save(group);
     res.status(201).json({ credential, outing: publicState(group, member) });
   });

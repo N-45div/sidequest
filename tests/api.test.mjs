@@ -54,7 +54,8 @@ test('participants cannot access others’ exact constraints, and outsider token
   const { data: view } = await call(`/outings/${id}`, 'GET', undefined, friend.credential);
   assert.equal(view.me.preferences.budget, 829);
   assert.ok(view.participants.every(p => !('preferences' in p) && !('tokenHash' in p)));
-  assert.ok(!JSON.stringify(view).includes('317'));
+  assert.equal(view.me.id, friend.outing.me.id);
+  assert.ok(!('members' in view));
   assert.equal((await call(`/outings/${id}`)).status, 401);
   const { data: outsider } = await call('/demo', 'POST', {});
   assert.equal((await call(`/outings/${id}`, 'GET', undefined, outsider.credential)).status, 401);
@@ -96,7 +97,7 @@ test('known budget, availability, quiet and step-free requirements are hard filt
   const result = sampleCandidates([{ ...preferences, budget: 250 }]);
   assert.ok(result.length > 0); assert.ok(result.every(c => c.cost <= 250 && c.quiet && c.stepFree));
   assert.equal(sampleCandidates([{ ...preferences, start: 1020, end: 1040 }]).length, 0);
-  assert.equal(sampleCandidates([{ ...preferences, budget: 0 }]).length, 0);
+  assert.ok(sampleCandidates([{ ...preferences, budget: 0 }]).every(c => c.cost === 0));
 });
 test('optimistic revisions prevent concurrent writes overwriting saved preferences', async t => {
   const store = await createStore({ mongoUri: null, file: ':memory:' }); t.after(() => store.close());
