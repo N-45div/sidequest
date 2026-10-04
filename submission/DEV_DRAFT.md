@@ -4,7 +4,7 @@ published: false
 tags: devchallenge, weekendchallenge, hf26challenge
 ---
 
-*Draft using the [official submission template](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). Deployment and real-recipient validation are still pending. This file has not been published.*
+*Draft using the [official submission template](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). Public deployment is verified; real-recipient validation is still pending. This file has not been published.*
 
 ## What I Built
 
@@ -16,11 +16,11 @@ The part I care about most is avoiding the moment when someone has to explain th
 
 ## Demo
 
-Public Render URL: pending repository access and a successful verified deployment.
+[Try SideQuest on Render](https://sidequest-lzrz.onrender.com).
 
-The sample experience already works locally: create or open a group, save preferences, regenerate options, vote, confirm, and download an IST-aware calendar invitation. [Demo walkthrough](DEMO_WALKTHROUGH.md).
+The sample experience works on the public app: create or open a group, save preferences, regenerate options, vote, confirm, and download an IST-aware calendar invitation. [Demo walkthrough](DEMO_WALKTHROUGH.md).
 
-The planned temporary Render preview uses sample activities and memory-only storage, with a visible notice that groups clear on restart. Durable hosting needs Atlas. This distinction matters: a running demo is not evidence of reliable stored plans.
+The public Render service uses MongoDB Atlas for durable records. Actual public API checks cover separate participants, preference isolation, voting, confirmation and calendar download. Activities remain labelled fictional concepts; this is not a verified venue-booking service.
 
 ## Code
 
@@ -56,10 +56,12 @@ Session export is pending. Earlier conversation history includes credentials, so
 
 Evidence available now:
 
+- **Render:** actual public frontend/API deployment.
+- **MongoDB Atlas:** real database write/read and deployed multi-participant checks.
 - **Temporal:** real local retry/recovery execution and stale-result protection.
 - **Tinker:** actual baseline/tuned results, with the tiny synthetic evaluation and weak final accuracy disclosed.
 - **GitHub Copilot category, through GitHub Actions:** real build/test automation. The official category accepts Actions; no Copilot coding/review session is claimed.
 
-Mastra runs the planner, but its live open-model orchestration still needs verification. Render, Gemma, DigitalOcean, Atlas, SerpApi, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
+Mastra runs the planner, but its live open-model orchestration still needs verification. Gemma, DigitalOcean, SerpApi, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
 
 Hardware is outside the active release scope; no Arduino category is entered.

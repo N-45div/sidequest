@@ -20,7 +20,7 @@ Independent new project for the Hacktoberfest Weekend Challenge. The current per
 - Consent-based voice-note uploads, reviewable transcription drafts and confirmed audio invitations. Browser flows tested with provider fixtures; live ElevenLabs access is pending.
 - Sentry spans with strict export redaction, optional Tiger Data hybrid retrieval and authenticated inference deployment files. See [integration setup](infra/README.md).
 
-This is a working prototype, not a completed submission; public deployment is in progress. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
+Live app: **https://sidequest-lzrz.onrender.com**. Render serves the frontend and API with durable MongoDB Atlas storage. Public API checks verify joining, privacy, voting, confirmation and calendar download. Submission preparation continues. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
 
 ## Run locally
 
@@ -57,7 +57,7 @@ The browser checks require installed Google Chrome and a running app on port 310
 4. For live search, configure `SERPAPI_API_KEY`. For Gemma inference, configure `GEMMA_BASE_URL`, `GEMMA_API_KEY` where required, and `GEMMA_MODEL`.
 5. Verify `/api/health`, create/join from separate devices, privacy isolation, and calendar download on the actual public URL.
 
-Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. No live deployment has been created yet.
+Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. The public deployment is active with Atlas and the disposable-preview flag disabled.
 
 An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live outings and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
 

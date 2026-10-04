@@ -18,3 +18,7 @@ The same six cases were evaluated before and after training. Their wording diffe
 `temporal-recovery.json` records an executed official local Temporal server test. Discovery initially fails with an injected transient error; the first worker stops; a fresh worker completes the persisted retry. There were two activity attempts and three sample candidates. Workflow arguments contain IDs/version only. This demonstrates local recovery, not hosted deployment or production reliability.
 
 Backboard and TabPFN result files are intentionally absent until those evaluations actually run. Voice browser tests use provider fixtures and are not cloud evidence.
+
+## Public deployment
+
+`render-live.json` records actual API execution against https://sidequest-lzrz.onrender.com with MongoDB Atlas. Fictional test participants cover independent joining, private preferences, authorization, deterministic filters, votes, idempotent confirmation and calendar download. Run `node scripts/live-check.mjs <public-url>` before redeployment, then `node scripts/live-check.mjs <public-url> --verify-persistence` after the new deployment is live. The credential needed for read-back stays only in ignored `artifacts/`.

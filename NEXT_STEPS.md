@@ -8,7 +8,7 @@ Enter secrets directly into ignored `.env` for development and Render Environmen
 
 | Needed | Enables | Verification |
 | --- | --- | --- |
-| Atlas URI | Durable production records | Host and guest on public Render URL; restart and verify persistence |
+| Atlas URI | Connected on public Render service | Write/read and independent host/guest API checks passed; redeployment persistence check recorded separately |
 | SerpApi key | Real source-linked venues | A live city search, uncertainty labels, unavailable-search recovery |
 | DigitalOcean host/domain and Gemma endpoint | Open-model preference extraction | Consented draft, correct time encoding, invalid-output recovery |
 | Tiger Data URL + embedding endpoint | Hybrid venue corpus | Execute migration, indexed real venues, retrieval quality |
@@ -26,4 +26,4 @@ Hardware and Arduino sponsor work have been removed from the active release scop
 
 Entire session evidence remains pending. GitHub Actions build/test automation is executed and passes; the official GitHub Copilot category explicitly accepts Actions automation. No Copilot coding/review session is claimed. Any captured session needs secret review before sharing.
 
-The requested persona is hypothetical. The sample stays fictional; no real friend or feedback is claimed. Real recipient validation, a public Render deployment, a demo recording and a DEV submission draft remain outstanding.
+The requested persona is hypothetical. The sample stays fictional; no real friend or feedback is claimed. The public Render deployment and DEV draft are complete. Real recipient validation, a demo recording and publication remain outstanding. The live app is https://sidequest-lzrz.onrender.com.

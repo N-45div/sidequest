@@ -4,12 +4,12 @@ Current feasible sponsor evidence; hardware is excluded from the active scope. D
 
 | Sponsor | Current state | Remaining evidence |
 | --- | --- | --- |
-| Render | Blueprint prepared | Account/repository connection and successful public deployment |
+| Render | Public Node web service deployed and public API flows verified | Record post-redeployment persistence evidence; see evaluations/render-live.json |
 | Gemma | Compatible extraction adapter prepared | Model endpoint and verified live extraction |
 | DigitalOcean | Authenticated inference Compose stack prepared | Account access, sized compute, model deployment and latency measurement |
 | Mastra | Executed discovery workflow using real constraint planner; model workflow wired | Live Gemma and SerpApi workflow execution with credentials |
 | SerpApi | Live Maps search adapter prepared | Key and successful source-linked venue results |
-| MongoDB Atlas | Real MongoDB persistence adapter prepared | Atlas connection and deployed multi-session verification |
+| MongoDB Atlas | Real Atlas write/read passed; deployed independent host/guest privacy and decision flows passed | Post-redeployment read-back recorded in evaluations/render-live.json |
 | Tiger Data | Hybrid retrieval, corpus indexing and SQL migration implemented; vector validation tested | Database/embedding access, executed SQL and retrieval evaluation |
 | Temporal | Real local server verified persisted activity retry across worker replacement; app queueing and worker implemented | Atlas-backed Render worker and Temporal Cloud verification |
 | Sentry Agent Tracing | Explicit agent/model/tool spans and export redaction implemented and tested | DSN, received real trace and failure diagnosis in Sentry |

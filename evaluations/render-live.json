@@ -1,0 +1,22 @@
+{
+  "recordedAt": "2026-10-04T09:03:30.323Z",
+  "url": "https://sidequest-lzrz.onrender.com",
+  "storage": "MongoDB Atlas",
+  "commit": "ed622250b2fdf2ef1e094631dbc4f95e03597faa",
+  "provenance": "Actual public Render API execution using fictional test participants",
+  "checks": [
+    "health",
+    "persistent storage mode",
+    "create",
+    "independent guest join",
+    "private preference isolation",
+    "outsider rejection",
+    "host-only discovery",
+    "known hard filters",
+    "voting",
+    "host-only confirmation",
+    "idempotent confirmation",
+    "calendar download"
+  ],
+  "persistence": "Pending an additional completed redeployment and read-back."
+}
