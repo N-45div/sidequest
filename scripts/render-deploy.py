@@ -13,8 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 REPO = 'https://github.com/N-45div/sidequest'
 STATE = ROOT / 'artifacts' / 'render-service.json'
+# Settings the web service may receive from ignored .env. RENDER_API_KEY never leaves this machine.
+SYNCABLE = ['MODEL_BASE_URL', 'MODEL_NAME', 'MODEL_API_KEY', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'SENTRY_DSN']
+
 for line in (ROOT / '.env').read_text().splitlines():
-    if '=' in line and line.split('=', 1)[0] in ['RENDER_API_KEY', 'MONGODB_URI', 'MONGODB_DATABASE', 'SERPAPI_API_KEY']:
+    if '=' in line and line.split('=', 1)[0] in ['RENDER_API_KEY', 'MONGODB_URI', 'MONGODB_DATABASE', 'SERPAPI_API_KEY', *SYNCABLE]:
         name, value = line.split('=', 1)
         os.environ.setdefault(name, value.strip().strip('\"\''))
 KEY = os.environ.get('RENDER_API_KEY')
@@ -34,9 +37,6 @@ def api(path, method='GET', body=None):
             if secret:
                 message = message.replace(secret, '[redacted]')
         raise SystemExit(f'Render HTTP {error.code}: {message[:700]}') from None
-
-# Settings the web service may receive from ignored .env. RENDER_API_KEY never leaves this machine.
-SYNCABLE = ['MODEL_BASE_URL', 'MODEL_NAME', 'MODEL_API_KEY', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'SENTRY_DSN']
 
 def remember(service):
     if service.get('repo', '').removesuffix('.git') != REPO.removesuffix('.git') or service.get('name') != 'sidequest':
