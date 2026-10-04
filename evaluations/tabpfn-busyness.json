@@ -49,5 +49,17 @@
  },
  "tabpfn_backend": "TabPFN v2 open weights, local CPU",
  "tabpfn_seconds": 330.4,
- "notes": "Popular times measure how crowded a place usually is, not how loud it is. Venue counts are small; treat the comparison as indicative."
+ "notes": "Popular times measure how crowded a place usually is, not how loud it is. Venue counts are small; treat the comparison as indicative.",
+ "published": {
+  "at": "2026-10-04T17:20:26Z",
+  "google_venues": 39,
+  "tabpfn_venues": 100,
+  "forecast_categories": [
+   "campus",
+   "coffee",
+   "library",
+   "outdoors"
+  ],
+  "skipped": "categories with fewer than three venues with history get no forecast"
+ }
 }
