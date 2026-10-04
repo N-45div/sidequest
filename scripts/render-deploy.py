@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parents[1]
-REPO = 'https://github.com/N-45div/sidequest.git'
+REPO = 'https://github.com/N-45div/sidequest'
 STATE = ROOT / 'artifacts' / 'render-service.json'
 for line in (ROOT / '.env').read_text().splitlines():
     if line.startswith('RENDER_API_KEY='):

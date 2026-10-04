@@ -24,6 +24,6 @@ Follow [infra/README.md](infra/README.md) for runnable deployment and evaluation
 
 The available board is UNO R3. Confirm whether an analog microphone is available, upload the provided sketch, run the serial bridge and verify a timestamped observation in the app. Raw ADC is uncalibrated. The UNO Q sponsor category remains unavailable with this board.
 
-Entire session evidence and actual Copilot work remain pending; generic GitHub Actions checks do not establish either sponsor's usage. Any captured session needs secret review before sharing.
+Entire session evidence remains pending. GitHub Actions build/test automation is executed and passes; the official GitHub Copilot category explicitly accepts Actions automation. No Copilot coding/review session is claimed. Any captured session needs secret review before sharing.
 
 The requested persona is hypothetical. The sample stays fictional; no real friend or feedback is claimed. Real recipient validation, a public Render deployment, a demo recording and a DEV submission draft remain outstanding.

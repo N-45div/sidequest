@@ -1,0 +1,65 @@
+---
+title: "SideQuest: private preferences, one shared outing"
+published: false
+tags: devchallenge, weekendchallenge, hf26challenge
+---
+
+*Draft using the [official submission template](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01). Deployment and real-recipient validation are still pending. This file has not been published.*
+
+## What I Built
+
+SideQuest turns the familiar “we should hang out” conversation into one shared plan. An organiser creates an outing, shares a link, and lets each person enter their budget, availability, interests, and requirements privately. The group sees a shortlist and votes; the organiser confirms one option and downloads a calendar invitation.
+
+The design starts with a hypothetical friend who always organises the catch-up. No real recipient or feedback is claimed yet. The sample friends and activity prices are fictional and labelled in the app.
+
+The part I care about most is avoiding the moment when someone has to explain their spending limit to the whole group. Their exact preference fields stay behind participant-specific authorization. Shared cards disclose uncertainty when a venue's price, access, or quietness has not been verified.
+
+## Demo
+
+Public Render URL: pending repository access and a successful verified deployment.
+
+The sample experience already works locally: create or open a group, save preferences, regenerate options, vote, confirm, and download an IST-aware calendar invitation. [Demo walkthrough](DEMO_WALKTHROUGH.md).
+
+The planned temporary Render preview uses sample activities and memory-only storage, with a visible notice that groups clear on restart. Durable hosting needs Atlas. This distinction matters: a running demo is not evidence of reliable stored plans.
+
+## Code
+
+[SideQuest repository](https://github.com/N-45div/sidequest)
+
+The repository is currently private. Reviewer access or public visibility remains a release decision. SideQuest is independent of Parallel: it contains no Parallel code, assets or conference-planning workflow.
+
+## How I Built It
+
+React and TypeScript provide the decision room. An Express API owns authorization, voting and confirmations. Deterministic checks filter known budget, time, quietness and access constraints; a model does not get to bypass them. Preference changes invalidate earlier cards and votes.
+
+Mastra runs the discovery workflow. The optional Gemma interpreter produces a validated draft for a person to review before saving. Its live model endpoint is not connected yet; typed controls already work.
+
+Temporal runs discovery as a durable job. Workflow history carries opaque IDs and a version, while the activity loads preferences from the application's store. In the executed local test, an injected tool failure was followed by worker shutdown. A fresh worker completed the saved retry. Separate tests show that changed preferences invalidate an in-flight result.
+
+I also ran a small real Tinker experiment with Qwen3-8B: rank-8 LoRA, three optimizer steps, 24 synthetic training cases and six held-out synthetic cases. Exact preference JSON improved from 0/6 to 2/6; correct fields improved from 24/36 to 26/36. That is useful debugging evidence, not a reliable production model. The tuned checkpoint remains outside the live interpretation path.
+
+The baseline repeatedly represented times as HHMM rather than minutes after midnight. Tuning corrected some cases but introduced missing fields in others. Keeping the same evaluation cases before and after training made that limitation visible.
+
+Sixteen automated tests currently pass. GitHub Actions also executed the build and test suite successfully. Desktop/mobile browser checks verify separate participant sessions, preference edits, voting, confirmation and calendar download. Voice UI checks use provider fixtures and therefore do not prove a live ElevenLabs run.
+
+## Why Does Open Innovation Matter?
+
+The planner's constraints and the Mastra workflow are inspectable. I can change the model endpoint independently of the shared decision flow, and I can test an open-weight model before trusting its output. Tinker let me measure a concrete fine-tuning attempt rather than assume the model improved.
+
+This prototype does not promise offline AI or universal privacy. Hosted interpretation and voice processing require consent, and the provider still receives that input. Exact preferences are hidden from other participants, but useful shared options can still reveal broad information about the group's constraints.
+
+## My Agent Session
+
+Session export is pending. Earlier conversation history includes credentials, so a raw session must not be published. Git history and the checked-in tests/evaluation reports show the implemented work.
+
+## Prize Categories
+
+Evidence available now:
+
+- **Temporal:** real local retry/recovery execution and stale-result protection.
+- **Tinker:** actual baseline/tuned results, with the tiny synthetic evaluation and weak final accuracy disclosed.
+- **GitHub Copilot category, through GitHub Actions:** real build/test automation. The official category accepts Actions; no Copilot coding/review session is claimed.
+
+Mastra runs the planner, but its live open-model orchestration still needs verification. Render, Gemma, DigitalOcean, Atlas, SerpApi, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
+
+The available Arduino is an UNO R3. Its sensor sketch and observation bridge are prepared, but no physical run is claimed. It does not satisfy the category's UNO Q requirement.

@@ -19,6 +19,6 @@ Do not equate an environment variable or dependency with a completed sponsor int
 | Tinker | Connectivity verified; real three-step LoRA training and baseline/tuned evaluation completed | Broader evaluation and reliable runtime integration; current exact-match result is only 2/6 synthetic cases |
 | Arduino | UNO R3 code and observation endpoint prepared | Physical sensor execution. UNO R3 does not meet the UNO Q category requirement |
 | Entire | Planned | Actual captured session linked in submission |
-| GitHub Copilot | Planned | Actual authenticated coding/review evidence |
+| GitHub Copilot category | Actual GitHub Actions build/test automation verified successful; the official category explicitly accepts Actions automation | Describe Actions honestly; no Copilot coding or review session is claimed |
 
 No prize qualification is asserted by this file. Update rows only when the relevant executed artifact exists.
