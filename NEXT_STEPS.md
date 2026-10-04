@@ -8,7 +8,7 @@ Enter secrets directly into ignored `.env` for development and Render Environmen
 
 | Needed | Enables | Verification |
 | --- | --- | --- |
-| Atlas URI | Connected on public Render service | Write/read and independent host/guest API checks passed; redeployment persistence check recorded separately |
+| Atlas URI | Connected on public Render service | Write/read, independent host/guest checks and post-redeployment persistence passed |
 | SerpApi key | Real source-linked venues | A live city search, uncertainty labels, unavailable-search recovery |
 | DigitalOcean host/domain and Gemma endpoint | Open-model preference extraction | Consented draft, correct time encoding, invalid-output recovery |
 | Tiger Data URL + embedding endpoint | Hybrid venue corpus | Execute migration, indexed real venues, retrieval quality |

@@ -20,7 +20,7 @@ The part I care about most is avoiding the moment when someone has to explain th
 
 The sample experience works on the public app: create or open a group, save preferences, regenerate options, vote, confirm, and download an IST-aware calendar invitation. [Demo walkthrough](DEMO_WALKTHROUGH.md).
 
-The public Render service uses MongoDB Atlas for durable records. Actual public API checks cover separate participants, preference isolation, voting, confirmation and calendar download. Activities remain labelled fictional concepts; this is not a verified venue-booking service.
+The public Render service uses MongoDB Atlas for durable records. Actual public API checks cover separate participants, preference isolation, voting, confirmation and calendar download. A confirmed outing was read back unchanged after a completed Render redeployment. Activities remain labelled fictional concepts; this is not a verified venue-booking service.
 
 ## Code
 

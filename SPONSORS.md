@@ -4,7 +4,7 @@ Current feasible sponsor evidence; hardware is excluded from the active scope. D
 
 | Sponsor | Current state | Remaining evidence |
 | --- | --- | --- |
-| Render | Public Node web service deployed and public API flows verified | Record post-redeployment persistence evidence; see evaluations/render-live.json |
+| Render | Public Node web service deployed and public API flows verified | Confirmed outing survived completed redeployment; see evaluations/render-live.json |
 | Gemma | Compatible extraction adapter prepared | Model endpoint and verified live extraction |
 | DigitalOcean | Authenticated inference Compose stack prepared | Account access, sized compute, model deployment and latency measurement |
 | Mastra | Executed discovery workflow using real constraint planner; model workflow wired | Live Gemma and SerpApi workflow execution with credentials |

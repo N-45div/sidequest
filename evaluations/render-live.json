@@ -18,5 +18,17 @@
     "idempotent confirmation",
     "calendar download"
   ],
-  "persistence": "Pending an additional completed redeployment and read-back."
+  "persistence": "The confirmed outing was read back after a completed Render redeployment.",
+  "browserChecks": [
+    "Saved preferences, discovered choices, voted and confirmed on the public app",
+    "Confirmed choice remained visible after browser refresh",
+    "Actual browser calendar download verified as an ICS event",
+    "Mobile confirmation viewport has no horizontal overflow"
+  ],
+  "persistenceVerifiedAt": "2026-10-04T09:08:54.554Z",
+  "persistenceDeployment": {
+    "id": "dep-db11ede0tbcc7392hppg",
+    "commit": "e8b79f2af04851a8b01250b1cb5e31b0e16b2cd2",
+    "finishedAt": "2026-10-04T09:08:24.847502Z"
+  }
 }
