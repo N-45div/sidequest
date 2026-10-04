@@ -30,10 +30,13 @@ def api(path, method='GET', body=None):
             return json.load(response)
     except HTTPError as error:
         message = error.read().decode(errors='replace')
-        for secret in [KEY, os.environ.get('SERPAPI_API_KEY'), os.environ.get('MONGODB_URI')]:
+        for secret in [KEY, *(os.environ.get(name) for name in ['SERPAPI_API_KEY', 'MONGODB_URI', *SYNCABLE])]:
             if secret:
                 message = message.replace(secret, '[redacted]')
         raise SystemExit(f'Render HTTP {error.code}: {message[:700]}') from None
+
+# Settings the web service may receive from ignored .env. RENDER_API_KEY never leaves this machine.
+SYNCABLE = ['MODEL_BASE_URL', 'MODEL_NAME', 'MODEL_API_KEY', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'SENTRY_DSN']
 
 def remember(service):
     if service.get('repo', '').removesuffix('.git') != REPO.removesuffix('.git') or service.get('name') != 'sidequest':
@@ -52,6 +55,7 @@ def main():
     parser.add_argument('--connect-atlas', action='store_true')
     parser.add_argument('--connect-search', action='store_true')
     parser.add_argument('--redeploy', action='store_true')
+    parser.add_argument('--sync-env', nargs='+', choices=SYNCABLE, metavar='NAME')
     args = parser.parse_args()
     if args.create_preview:
         services = [entry['service'] for entry in api('services?limit=100')]
@@ -91,6 +95,11 @@ def main():
             raise SystemExit('Set SERPAPI_API_KEY in ignored .env.')
         api('services/' + state['id'] + '/env-vars/SERPAPI_API_KEY', 'PUT', {'value': os.environ['SERPAPI_API_KEY']})
         print('SerpApi setting applied only to SideQuest; redeploy to activate.')
+    for name in args.sync_env or []:
+        if not os.environ.get(name):
+            raise SystemExit(f'Set {name} in ignored .env.')
+        api('services/' + state['id'] + '/env-vars/' + name, 'PUT', {'value': os.environ[name]})
+        print(f'{name} set on Render.')
     if args.redeploy:
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
         result = api('services/' + state['id'] + '/deploys', 'POST', {'commitId': sha, 'clearCache': 'do_not_clear'})
