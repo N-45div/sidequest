@@ -19,8 +19,9 @@ flowchart TB
     API --> Atlas[(MongoDB Atlas)]
     Workflow -->|City and space-type queries| Search[SerpApi Google Maps]
     Workflow -.-> Corpus[(Optional Tiger Data corpus)]
-    API -.-> Model[Optional Gemma-compatible endpoint]
-    API -.-> Voice[Optional ElevenLabs]
+    Workflow -->|Consented text| Model[Qwen3.5-4B + LoRA on Tinker]
+    API -->|Consented audio| Voice[ElevenLabs Scribe and speech]
+    Workflow -->|Place IDs| Busy[(Busyness forecasts in Atlas)]
     API -.-> Traces[Optional redacted Sentry traces]
     API -.-> Temporal[Optional Temporal service]
     Temporal -.-> Worker[Separate discovery worker]
@@ -180,9 +181,11 @@ flowchart LR
 
 Other members never receive peer preference objects or token hashes. An invite permits joining but is not a member credential. There is no identity/account system, credential recovery or end-to-end encryption of stored preferences. Shared choices can reveal broad group constraints.
 
-Gemma-compatible interpretation runs through a validated Mastra workflow and returns an unsaved draft. ElevenLabs uploads authenticate before multipart processing, bound audio to 5 MB and require consent. Spoken invitations use the public confirmed plan. These live providers remain unverified; fixtures exercise their contracts.
+Interpretation runs through a validated Mastra workflow and returns an unsaved draft. The server renders the Qwen chat prompt itself from `server/extraction-prompt.txt`, the same file the Tinker trainer reads. It sends that prompt to an OpenAI-compatible `/completions` endpoint (the tuned `tinker://` sampler path in production), converts the `HH:MM` draft to minutes and validates it with the same schema as hand-entered preferences. User text cannot inject chat-template tokens. ElevenLabs uploads authenticate before multipart processing, bound audio to 5 MB and require consent. The transcript fills the same text box, so it goes through the same model and review step. Spoken invitations use the public confirmed plan.
 
-Sentry defaults to no automatic HTTP instrumentation. Explicit spans pass through an allowlist that omits prompts, request URLs, credentials and user fields. Cloud receipt still needs a DSN and verification. Tinker, Backboard and TabPFN are separate evaluation tools, not part of the current decision path. Entire hooks are local development tooling, not an application runtime component.
+Busyness forecasts are computed offline by `scripts/tabpfn_busyness.py` and stored per Google place ID in the Atlas `busyness` collection. Discovery looks up the circle's weekday and start hour and attaches a label and its source (Google popular times or a TabPFN forecast). When anyone needs quiet, quieter places rank first among equal matches. Forecasts never filter options, and a lookup failure leaves the shortlist unchanged.
+
+Sentry defaults to no automatic HTTP instrumentation. Explicit spans pass through an allowlist that omits prompts, request URLs, credentials and user fields. Cloud receipt still needs a DSN and verification. Backboard is a separate evaluation tool, not part of the decision path. Entire hooks are local development tooling, not an application runtime component.
 
 ## Code map and limits
 
