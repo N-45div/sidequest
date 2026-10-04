@@ -1,6 +1,6 @@
 # SideQuest
 
-**College study circles, with private preferences and one shared plan.**
+**Study circles for school and college students, with private preferences and one shared plan.**
 
 SideQuest helps classmates turn "we should revise together" into a time and place. Students share availability, study-space budgets and requirements privately, vote on a shortlist and confirm a session with a calendar invitation.
 

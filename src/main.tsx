@@ -143,7 +143,7 @@ function App() {
           <button className="button primary full" disabled={!!busy}>{busy === 'create' ? <LoaderCircle className="spin" size={18} /> : <Plus size={18} />} Create a study circle</button>
         </form><div className="demo-divider"><span>or take a little look around</span></div><button className="button demo full" disabled={!!busy} onClick={() => action('demo', async () => enter(await api('/demo', 'POST', {})))}><Sparkles size={17} /> Explore a sample circle</button><p className="demo-disclosure">Fictional students. Illustrative costs. A working study circle.</p></div>
       </section>}
-      <footer><span>MAKE ROOM FOR LEARNING TOGETHER.</span><span>Built for college study circles.</span></footer>
+      <footer><span>MAKE ROOM FOR LEARNING TOGETHER.</span><span>Built for student study circles, school or college.</span></footer>
     </main>
 
     <dialog ref={dialogRef} onCancel={() => setPreferencesOpen(false)} onClose={() => setPreferencesOpen(false)} className="preferences-dialog"><form onSubmit={e => { e.preventDefault(); action('preferences', async () => { setOuting(await api(`/outings/${route}/preferences`, 'PUT', draft)); setPreferencesOpen(false); setNotice('Your private preferences are saved. Previous options and votes are cleared.'); }); }}>
