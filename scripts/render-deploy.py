@@ -14,7 +14,7 @@ sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 REPO = 'https://github.com/N-45div/sidequest'
 STATE = ROOT / 'artifacts' / 'render-service.json'
 for line in (ROOT / '.env').read_text().splitlines():
-    if '=' in line and line.split('=', 1)[0] in ['RENDER_API_KEY', 'MONGODB_URI', 'MONGODB_DATABASE']:
+    if '=' in line and line.split('=', 1)[0] in ['RENDER_API_KEY', 'MONGODB_URI', 'MONGODB_DATABASE', 'SERPAPI_API_KEY']:
         name, value = line.split('=', 1)
         os.environ.setdefault(name, value.strip().strip('\"\''))
 KEY = os.environ.get('RENDER_API_KEY')
@@ -29,7 +29,10 @@ def api(path, method='GET', body=None):
         with urlopen(request, timeout=40) as response:
             return json.load(response)
     except HTTPError as error:
-        message = error.read().decode(errors='replace').replace(KEY, '[redacted]')
+        message = error.read().decode(errors='replace')
+        for secret in [KEY, os.environ.get('SERPAPI_API_KEY'), os.environ.get('MONGODB_URI')]:
+            if secret:
+                message = message.replace(secret, '[redacted]')
         raise SystemExit(f'Render HTTP {error.code}: {message[:700]}') from None
 
 def remember(service):
@@ -47,6 +50,7 @@ def main():
     parser.add_argument('--status', action='store_true')
     parser.add_argument('--logs', action='store_true')
     parser.add_argument('--connect-atlas', action='store_true')
+    parser.add_argument('--connect-search', action='store_true')
     parser.add_argument('--redeploy', action='store_true')
     args = parser.parse_args()
     if args.create_preview:
@@ -82,6 +86,11 @@ def main():
         for name, value in [('MONGODB_URI', os.environ['MONGODB_URI']), ('MONGODB_DATABASE', 'sidequest'), ('ALLOW_EPHEMERAL_DEMO', 'false')]:
             api('services/' + state['id'] + '/env-vars/' + name, 'PUT', {'value': value})
         print('Atlas settings applied to SideQuest; redeploy to activate.')
+    if args.connect_search:
+        if not os.environ.get('SERPAPI_API_KEY'):
+            raise SystemExit('Set SERPAPI_API_KEY in ignored .env.')
+        api('services/' + state['id'] + '/env-vars/SERPAPI_API_KEY', 'PUT', {'value': os.environ['SERPAPI_API_KEY']})
+        print('SerpApi setting applied only to SideQuest; redeploy to activate.')
     if args.redeploy:
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
         result = api('services/' + state['id'] + '/deploys', 'POST', {'commitId': sha, 'clearCache': 'do_not_clear'})
