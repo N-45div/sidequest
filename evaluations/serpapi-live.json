@@ -1,6 +1,7 @@
 {
-  "recordedAt": "2026-10-04T09:20:46.381Z",
+  "recordedAt": "2026-10-04T14:04:55.336Z",
   "url": "https://sidequest-lzrz.onrender.com",
+  "purpose": "College study-circle venue discovery",
   "engine": "google_maps",
   "workflow": "Mastra sidequest-discovery",
   "city": "Bengaluru",
@@ -14,33 +15,33 @@
   ],
   "candidates": [
     {
-      "name": "Dyu Art Cafe",
-      "source": "https://www.google.com/maps/search/?api=1&query=Dyu%20Art%20Cafe%20KHB%20MIG%20Colony%2C%20Dyu%20art%20cafe%2023%2C%2022%2C%201st%20Cross%20Rd%2C%20Koramangala%208th%20Block%2C%20Koramangala%2C%20Bengaluru%2C%20Karnataka%20560095%2C%20India",
-      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "name": "Nuk Library Caf\u00c4\u2014 and Cowork",
+      "source": "https://www.google.com/maps/search/?api=1&query=Nuk%20Library%20Caf%C4%97%20and%20Cowork%201st%20Floor%2C%20PGK%20Chambers%2C%20Diagonally%20opposite%20La%20Casa%20Restaurant%2C%20Hosa%20Rd%2C%20Kasavanahalli%2C%20Bengaluru%2C%20Karnataka%20560035%2C%20India",
+      "retrievedAt": "2026-10-04T14:04:55.817Z",
       "uncertainties": [
-        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+        "Cost, study suitability, date-specific hours, noise, campus visitor eligibility and step-free access need confirmation before studying here."
       ]
     },
     {
-      "name": "The Hole In The Wall Cafe",
-      "source": "https://www.google.com/maps/search/?api=1&query=The%20Hole%20In%20The%20Wall%20Cafe%203%2C%208th%20Main%20Rd%2C%204th%20Block%2C%20Koramangala%2C%20Bengaluru%2C%20Karnataka%20560047%2C%20India",
-      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "name": "EkaChitta Study Centre/Reading Room/Study Room",
+      "source": "https://www.google.com/maps/search/?api=1&query=EkaChitta%20Study%20Centre%2FReading%20Room%2FStudy%20Room%2025th%20Main%20Rd%2C%20Putlanpalya%2C%20Jayanagara%209th%20Block%2C%20Jayanagar%2C%20Bengaluru%2C%20Karnataka%20560069%2C%20India",
+      "retrievedAt": "2026-10-04T14:04:55.817Z",
       "uncertainties": [
-        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+        "Cost, study suitability, date-specific hours, noise, campus visitor eligibility and step-free access need confirmation before studying here."
       ]
     },
     {
-      "name": "Matteo Coffea",
-      "source": "https://www.google.com/maps/search/?api=1&query=Matteo%20Coffea%202%2C%20Church%20Street%2C%20Brigade%20Rd%2C%20Bengaluru%2C%20Karnataka%20560001%2C%20India",
-      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "name": "City Central Library",
+      "source": "https://www.google.com/maps/search/?api=1&query=City%20Central%20Library%20593%2C%2013th%20Main%20Rd%2C%20HAL%202nd%20Stage%2C%20Indiranagar%2C%20Bengaluru%2C%20Karnataka%20560008%2C%20India",
+      "retrievedAt": "2026-10-04T14:04:55.817Z",
       "uncertainties": [
-        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+        "Cost, study suitability, date-specific hours, noise, campus visitor eligibility and step-free access need confirmation before studying here."
       ]
     }
   ],
   "deployment": {
-    "id": "dep-db11jrc9v7es73dgp3h0",
-    "commit": "0abc95c62460edd79f84734426cb50c910a3f184"
+    "id": "dep-db15p3k9v7es73e35nm0",
+    "commit": "92aa056914dae977de727f07c10603a0dbf490ab"
   },
-  "browserCheck": "Actual public browser created a live outing, saved private requirements and displayed three source-linked real venue cards."
+  "browserCheck": "Public homepage and fictional Data structures revision circle display library/campus/study-cafe choices."
 }
