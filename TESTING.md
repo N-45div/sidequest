@@ -114,11 +114,14 @@ Hosted recovery additionally needs a worker, shared Atlas, Temporal credentials 
 
 | Tool | Command / guide | Prerequisite and limit |
 | --- | --- | --- |
-| Tinker | `python scripts/tinker_experiment.py --train` in its virtual environment | Real training/sampling usage; six synthetic cases do not establish production quality |
-| Backboard | `npm run eval:backboard` | API key/model pairs; existing extraction fixtures |
-| TabPFN | `python scripts/tabpfn-eval.py --csv PATH --consented-aggregate-data` | Separate ML environment; 50+ distinct real aggregate records and both outcomes |
+| Tinker study | `python scripts/tinker_study.py baseline`, then `python scripts/tinker_study.py train` | `TINKER_API_KEY`; scores zero-shot, three-shot, Qwen3.6-27B and the tuned model on the same 50 hand-written and 100 generated messages; writes `evaluations/tinker-study.json` |
+| Live extraction | Set `MODEL_*`, open a circle's preferences, type a message and choose *Interpret, then review* | Uses the tuned model on Tinker's OpenAI-compatible endpoint, which Tinker describes as suited to low traffic |
+| Backboard | `npm run eval:backboard` | `BACKBOARD_API_KEY` with credit for model calls; same 50 hand-written messages and prompt as the Tinker study |
+| Busyness data | `python scripts/busyness_collect.py --lookups 100` | `SERPAPI_API_KEY`; spends one credit per search and per place lookup; raw data stays in ignored `artifacts/busyness/` |
+| TabPFN busyness | `python scripts/tabpfn_busyness.py evaluate`, then `publish` | `pip install tabpfn` (v2 open weights, local CPU); `publish` needs `MONGODB_URI`; writes `evaluations/tabpfn-busyness.json` |
+| Legacy Tinker | `python scripts/tinker_experiment.py --train` | The first six-case outing experiment, kept as history |
 | Tiger Data | `npm run setup:venues` | Changes the intended database; live retrieval evaluation still needed |
-| Gemma / ElevenLabs / Sentry | [Integration checks](infra/README.md) | Actual endpoint/audio/received trace; fixtures are insufficient |
+| ElevenLabs / Sentry | [Integration checks](infra/README.md) | Actual audio/received trace; fixtures are insufficient |
 
 Do not rerun paid experiments just to produce a green report. Tinker's historical fixtures predate the study-circle refinement and remain historical evidence.
 
