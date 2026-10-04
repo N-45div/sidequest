@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { preferenceSchema, sampleCandidates, discoverLive } from '../server/planner.mjs';
+import { preferenceSchema, sampleCandidates, discoverLive, rankCandidates } from '../server/planner.mjs';
+import { crowdAt } from '../server/busyness.mjs';
 
 const preferences = { budget:0, start:1020, end:1200, interests:['library','campus'], quiet:true, stepFree:true };
 test('study circles support free accessible revision spaces within the shared time window', () => {
@@ -22,4 +23,16 @@ test('live study search requests libraries and keeps campus access and quietness
   assert.deepEqual(queries,['public libraries with study space in Pune']);
   assert.equal(results[0].quiet,null); assert.equal(results[0].stepFree,null); assert.equal(results[0].cost,null);
   assert.ok(results[0].uncertainties.some(note => note.includes('campus visitor eligibility')));
+});
+test('busyness forecasts label the session hour and put quieter places first when someone needs quiet', async () => {
+  const week = busy => Array.from({ length: 7 }, (_, day) => Array.from({ length: 15 }, (_, h) => day === 1 && h === 9 ? busy : 20));
+  const docs = [{ _id: 'busy', source: 'tabpfn', week: week(82) }, { _id: 'calm', source: 'google', week: week(25) }];
+  const crowd = await crowdAt(['busy', 'calm'], '2026-10-05', 17 * 60 + 30, async ids => docs.filter(d => ids.includes(d._id)));
+  assert.deepEqual(crowd.get('busy'), { score: 82, label: 'Usually busy', source: 'tabpfn', hour: 17 });
+  assert.equal(crowd.get('calm').label, 'Usually quiet');
+  const venue = id => ({ name: id, subtitle: '', category: 'coffee', cost: null, duration: 90, quiet: null, stepFree: null, uncertainties: [], crowd: crowd.get(id) });
+  const person = { budget: 300, start: 1020, end: 1200, interests: ['coffee'], quiet: false, stepFree: false };
+  assert.deepEqual(rankCandidates([venue('busy'), venue('calm')], [{ ...person, quiet: true }]).map(c => c.name), ['calm', 'busy']);
+  assert.deepEqual(rankCandidates([venue('busy'), venue('calm')], [person]).map(c => c.name), ['busy', 'calm']);
+  assert.equal((await crowdAt(['busy'], '2026-10-05', 23 * 60, async () => docs)).size, 0);
 });

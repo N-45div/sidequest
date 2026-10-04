@@ -120,7 +120,7 @@ export function createApp(store, options = {}) {
     }
     const preferences = group.members.map(m => m.preferences);
     let candidates;
-    try { candidates = await runDiscovery({ city: group.city, mode: group.mode, preferences }); }
+    try { candidates = await runDiscovery({ city: group.city, mode: group.mode, date: group.date, preferences }); }
     catch { throw fail(503, 'Venue search is unavailable. Your group is saved; try again shortly.'); }
     // Saving with the original revision prevents stale async results overwriting changed preferences.
     reset(group); group.candidates = candidates; await save(group); res.json(publicState(group, member));

@@ -27,7 +27,7 @@ export function createDiscoveryActivity(store, planner = runDiscovery) {
     const current = g => g && !g.decision && g.version === version && g.discovery?.id === jobId;
     if (!current(group)) return { status: 'superseded' };
     if (group.discovery.status === 'complete') return { status: 'complete', count: group.candidates.length };
-    const candidates = await planner({ city: group.city, mode: group.mode, preferences: group.members.map(m => m.preferences) });
+    const candidates = await planner({ city: group.city, mode: group.mode, date: group.date, preferences: group.members.map(m => m.preferences) });
     // Reload after the tool completes. Unrelated observations must not lose data;
     // changed preferences or a new job must never receive these old results.
     for (let attempt = 0; attempt < 5; attempt++) {

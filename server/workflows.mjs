@@ -3,12 +3,12 @@ import { z } from 'zod';
 import { preferenceSchema, sampleCandidates, discoverLive, extractPreferences } from './planner.mjs';
 import { trace } from './telemetry.mjs';
 
-const inputSchema = z.object({ city: z.string().min(1).max(80), mode: z.enum(['sample', 'live']),
+const inputSchema = z.object({ city: z.string().min(1).max(80), mode: z.enum(['sample', 'live']), date: z.string().optional(),
   preferences: z.array(preferenceSchema).min(1).max(8) });
 const candidatesSchema = z.array(z.object({ id: z.string(), name: z.string(), duration: z.number(), start: z.number() }).passthrough());
 const search = createStep({ id: 'discover-venues', inputSchema, outputSchema: candidatesSchema,
   execute: async ({ inputData }) => trace('gen_ai.execute_tool', inputData.mode === 'sample' ? 'sample' : 'serpapi', () =>
-    inputData.mode === 'sample' ? sampleCandidates(inputData.preferences) : discoverLive(inputData.city, inputData.preferences, process.env.SERPAPI_API_KEY)) });
+    inputData.mode === 'sample' ? sampleCandidates(inputData.preferences) : discoverLive(inputData.city, inputData.preferences, process.env.SERPAPI_API_KEY, inputData.date)) });
 const validate = createStep({ id: 'validate-shortlist', inputSchema: candidatesSchema, outputSchema: candidatesSchema,
   execute: async ({ inputData }) => inputData.slice(0, 3) });
 // No Mastra storage or exporter is registered. Private inputs stay in this

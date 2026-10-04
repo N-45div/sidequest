@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { retrieveVenues, indexVenues } from './venue-index.mjs';
+import { crowdAt } from './busyness.mjs';
 
 export const preferenceSchema = z.object({
   budget: z.number().int().min(0).max(100000),
@@ -23,11 +24,13 @@ export function rankCandidates(venues, preferences) {
   if (!preferences.length) return [];
   const start = Math.max(...preferences.map(p => p.start));
   const end = Math.min(...preferences.map(p => p.end));
+  // A busyness forecast is not a noise measurement, so it orders options rather than excluding them.
+  const crowd = preferences.some(p => p.quiet) ? v => v.crowd?.score ?? 50 : () => 0;
   return venues.filter(v =>
     start + v.duration <= end &&
     preferences.every(p => (v.cost == null || v.cost <= p.budget) && (!p.quiet || v.quiet !== false) && (!p.stepFree || v.stepFree !== false))
   ).map(v => ({ ...v, start, score: preferences.reduce((sum, p) => sum + Number(p.interests.includes(v.category)), 0) }))
-    .sort((a, b) => b.score - a.score || (a.cost ?? Infinity) - (b.cost ?? Infinity))
+    .sort((a, b) => b.score - a.score || crowd(a) - crowd(b) || (a.cost ?? Infinity) - (b.cost ?? Infinity))
     .slice(0, 3).map(({ score, ...v }) => ({
       ...v, id: randomUUID(),
       reason: score ? 'Matches interests shared by the group.' : 'An alternative within the known group constraints.',
@@ -38,7 +41,7 @@ export function sampleCandidates(preferences) {
   return rankCandidates(activities.map(v => ({ ...v, sample: true, source: null, uncertainties: ['Illustrative study space and cost; campus access and real venue details have not been verified.'] })), preferences);
 }
 
-export async function discoverLive(city, preferences, key) {
+export async function discoverLive(city, preferences, key, date) {
   const categories = [...new Set(preferences.flatMap(p => p.interests))].slice(0, 3);
   // Retrieval is optional; search still works if the index is unavailable.
   let indexed = [];
@@ -52,7 +55,7 @@ export async function discoverLive(city, preferences, key) {
     if (data.error) throw new Error('Venue search could not complete. Check the search account configuration.');
     return (data.local_results || []).slice(0, 5).map(v => ({
       name: String(v.title || 'Unnamed venue').slice(0, 120), subtitle: String(v.address || city).slice(0, 200),
-      category, cost: null, duration: 90, quiet: null, stepFree: null, tone: category,
+      category, cost: null, duration: 90, quiet: null, stepFree: null, tone: category, placeId: v.place_id || null,
       sample: false, source: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.title} ${v.address || city}`)}`,
       retrievedAt: new Date().toISOString(),
       uncertainties: ['Cost, study suitability, date-specific hours, noise, campus visitor eligibility and step-free access need confirmation before studying here.'],
@@ -60,6 +63,12 @@ export async function discoverLive(city, preferences, key) {
   }));
   const unique = [...new Map(responses.flat().map(v => [v.name + v.subtitle, v])).values()];
   try { await indexVenues(city, unique); } catch { /* optional indexing must not discard live results */ }
+  if (date) {
+    try {
+      const crowd = await crowdAt(unique.map(v => v.placeId).filter(Boolean), date, Math.max(...preferences.map(p => p.start)));
+      for (const v of unique) if (crowd.has(v.placeId)) v.crowd = crowd.get(v.placeId);
+    } catch { /* forecasts are optional; options still rank without them */ }
+  }
   const merged = new Map([...indexed, ...unique].map(v => [v.name + v.subtitle, v]));
   return rankCandidates([...merged.values()], preferences);
 }
