@@ -17,7 +17,11 @@ export async function transcribeAudio(file, fetcher = fetch) {
 }
 export async function speakInvitation(group, candidate, fetcher = fetch) {
   if (!process.env.ELEVENLABS_API_KEY || !process.env.ELEVENLABS_VOICE_ID) throw new Error('Voice is not configured.');
-  const text = `${group.title}. ${candidate.name}, in ${group.city}, on ${group.date}, at ${Math.floor(candidate.start / 60)}:${String(candidate.start % 60).padStart(2, '0')} India time. Please check venue details before visiting.`;
+  // Spoken forms: an ISO date and a 24-hour clock come out as "2026 hours 1005"
+  const day = new Date(`${group.date}T00:00:00Z`).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+  const hour = Math.floor(candidate.start / 60), minute = candidate.start % 60;
+  const time = `${hour % 12 || 12}${minute ? `:${String(minute).padStart(2, '0')}` : ''} ${hour < 12 ? 'AM' : 'PM'}`;
+  const text = `${group.title}. ${candidate.name}, in ${group.city}, on ${day}, at ${time}, India time. Please check venue details before visiting.`;
   const response = await trace('gen_ai.execute_tool', 'elevenlabs', () => fetcher(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(process.env.ELEVENLABS_VOICE_ID)}?output_format=mp3_44100_128`, {
     method: 'POST', signal: AbortSignal.timeout(30000), headers: { 'xi-api-key': process.env.ELEVENLABS_API_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2' }),

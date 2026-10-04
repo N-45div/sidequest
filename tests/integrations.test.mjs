@@ -74,7 +74,8 @@ test('voice adapters return an unsaved draft and send only the public confirmed 
     assert.equal(options.body.get('model_id'), 'scribe_v1'); return Response.json({ text: 'Coffee after six' });
   }), 'Coffee after six');
   const output = await speakInvitation({ title: 'Catch-up', city: 'City', date: '2026-10-04', members: [{ preferences }] }, { name: 'Coffee', start: 1080 }, async (url, options) => {
-    assert.ok(!options.body.includes('317')); assert.ok(!options.body.includes('preferences')); return new Response('audio-fixture');
+    assert.ok(!options.body.includes('317')); assert.ok(!options.body.includes('preferences'));
+    assert.ok(JSON.parse(options.body).text.includes('on Sunday, 4 October, at 6 PM, India time')); return new Response('audio-fixture');
   });
   assert.equal(output.toString(), 'audio-fixture');
 });
