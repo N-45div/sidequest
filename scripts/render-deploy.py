@@ -3,6 +3,7 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
@@ -13,8 +14,9 @@ sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 REPO = 'https://github.com/N-45div/sidequest'
 STATE = ROOT / 'artifacts' / 'render-service.json'
 for line in (ROOT / '.env').read_text().splitlines():
-    if line.startswith('RENDER_API_KEY='):
-        os.environ.setdefault('RENDER_API_KEY', line.split('=', 1)[1].strip().strip('\"\''))
+    if '=' in line and line.split('=', 1)[0] in ['RENDER_API_KEY', 'MONGODB_URI', 'MONGODB_DATABASE']:
+        name, value = line.split('=', 1)
+        os.environ.setdefault(name, value.strip().strip('\"\''))
 KEY = os.environ.get('RENDER_API_KEY')
 if not KEY:
     raise SystemExit('Set RENDER_API_KEY in ignored .env.')
@@ -44,6 +46,8 @@ def main():
     parser.add_argument('--create-preview', action='store_true')
     parser.add_argument('--status', action='store_true')
     parser.add_argument('--logs', action='store_true')
+    parser.add_argument('--connect-atlas', action='store_true')
+    parser.add_argument('--redeploy', action='store_true')
     args = parser.parse_args()
     if args.create_preview:
         services = [entry['service'] for entry in api('services?limit=100')]
@@ -68,11 +72,28 @@ def main():
         if not STATE.exists():
             raise SystemExit('No known SideQuest service. Create it first.')
         state = remember(api('services/' + json.loads(STATE.read_text())['id']))
-    if args.status or args.create_preview:
+    if args.connect_atlas:
+        if not os.environ.get('MONGODB_URI'):
+            raise SystemExit('Set MONGODB_URI in ignored .env.')
+        check = subprocess.run(['node', str(ROOT / 'scripts' / 'atlas-check.mjs')], cwd=ROOT, env=os.environ)
+        if check.returncode:
+            raise SystemExit('Atlas check failed; hosted storage was not changed.')
+        # Update only these keys; preserve unrelated sponsor configuration.
+        for name, value in [('MONGODB_URI', os.environ['MONGODB_URI']), ('MONGODB_DATABASE', 'sidequest'), ('ALLOW_EPHEMERAL_DEMO', 'false')]:
+            api('services/' + state['id'] + '/env-vars/' + name, 'PUT', {'value': value})
+        print('Atlas settings applied to SideQuest; redeploy to activate.')
+    if args.redeploy:
+        sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+        result = api('services/' + state['id'] + '/deploys', 'POST', {'commitId': sha, 'clearCache': 'do_not_clear'})
+        print(json.dumps({key: result.get(key) for key in ['id', 'status']}))
+    if args.status or args.create_preview or args.logs:
         deploys = api('services/' + state['id'] + '/deploys?limit=5')
         print(json.dumps({'deploys': [{key: entry['deploy'].get(key) for key in ['id', 'status', 'commit', 'finishedAt']} for entry in deploys]}))
     if args.logs:
-        data = api('logs?' + urlencode({'ownerId': state['ownerId'], 'resource': state['id'], 'limit': 50, 'direction': 'backward'}))
+        params = {'ownerId': state['ownerId'], 'resource': state['id'], 'limit': 50, 'direction': 'backward'}
+        if deploys:
+            params['startTime'] = deploys[0]['deploy']['createdAt']
+        data = api('logs?' + urlencode(params))
         for entry in reversed(data.get('logs', [])):
             print(str(entry.get('message', '')).replace(KEY, '[redacted]')[:1500])
 
