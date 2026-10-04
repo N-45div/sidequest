@@ -13,7 +13,7 @@ Independent new project for the Hacktoberfest Weekend Challenge. The current per
 - Vote, confirm once, and download an IST-aware calendar entry.
 - Invalidate old candidates and votes when preferences or membership change.
 - Persist local development data in SQLite; use MongoDB Atlas when configured.
-- Optional SerpApi live discovery and Gemma-compatible extraction adapters, awaiting live verification with credentials.
+- SerpApi Google Maps discovery executed with real Bengaluru venues; source links and unresolved requirements remain visible. Optional Gemma extraction still needs an endpoint.
 - Tinker connectivity verified; actual bounded fine-tuning experiment completed. Exact JSON matches improved from 0/6 to 2/6 synthetic cases; this remains too unreliable for production. See [evaluations](evaluations/README.md).
 - Mastra discovery and model interpretation workflows; discovery executed locally.
 - Temporal queued discovery and separate worker. A real local Temporal server recovered a persisted retry after worker replacement.
@@ -60,6 +60,10 @@ The browser checks require installed Google Chrome and a running app on port 310
 Production deliberately refuses to start without MongoDB. Render ephemeral filesystem storage is not treated as durable participant storage. The public deployment is active with Atlas and the disposable-preview flag disabled.
 
 An explicit disposable preview can use `render-preview.yaml` or `python scripts/render-deploy.py --create-preview`. This sets `ALLOW_EPHEMERAL_DEMO=true`, uses memory only, disables live outings and displays a clear restart/reset notice. It is not durable production storage. To upgrade, set the SideQuest service's `MONGODB_URI` to Atlas, remove the preview flag and redeploy. Keep the Render deployment API key local; the web runtime does not need it.
+
+## SerpApi India Hackathon
+
+SideQuest targets Travel & Local Discovery. See [entry draft and local demo checklist](submission/SERPAPI_DRAFT.md). The SerpApi credential stays in the ignored local environment and Render secrets; never put it in a frontend bundle. Live mode searches real venues, while the sample mode remains fictional.
 
 ## Tinker experiment
 

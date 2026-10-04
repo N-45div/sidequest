@@ -7,8 +7,8 @@ Current feasible sponsor evidence; hardware is excluded from the active scope. D
 | Render | Public Node web service deployed and public API flows verified | Confirmed outing survived completed redeployment; see evaluations/render-live.json |
 | Gemma | Compatible extraction adapter prepared | Model endpoint and verified live extraction |
 | DigitalOcean | Authenticated inference Compose stack prepared | Account access, sized compute, model deployment and latency measurement |
-| Mastra | Executed discovery workflow using real constraint planner; model workflow wired | Live Gemma and SerpApi workflow execution with credentials |
-| SerpApi | Live Maps search adapter prepared | Key and successful source-linked venue results |
+| Mastra | Executed discovery workflow using real constraint planner; model workflow wired | Live Gemma endpoint verification; SerpApi workflow executed with actual search results |
+| SerpApi | Actual Google Maps search returned real Bengaluru venues through Mastra locally and on public Render | Verified public capability, discovery and source links; see evaluations/serpapi-live.json |
 | MongoDB Atlas | Real Atlas write/read passed; deployed independent host/guest privacy and decision flows passed | Post-redeployment read-back recorded in evaluations/render-live.json |
 | Tiger Data | Hybrid retrieval, corpus indexing and SQL migration implemented; vector validation tested | Database/embedding access, executed SQL and retrieval evaluation |
 | Temporal | Real local server verified persisted activity retry across worker replacement; app queueing and worker implemented | Atlas-backed Render worker and Temporal Cloud verification |

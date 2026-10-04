@@ -1,0 +1,46 @@
+{
+  "recordedAt": "2026-10-04T09:20:46.381Z",
+  "url": "https://sidequest-lzrz.onrender.com",
+  "engine": "google_maps",
+  "workflow": "Mastra sidequest-discovery",
+  "city": "Bengaluru",
+  "provenance": "Actual public Render execution with fictional test organiser; venue results came from SerpApi",
+  "checks": [
+    "live capability enabled",
+    "live outing created",
+    "private preferences saved",
+    "actual search produced source-linked venues",
+    "unknown cost/noise/access remain unknown"
+  ],
+  "candidates": [
+    {
+      "name": "Dyu Art Cafe",
+      "source": "https://www.google.com/maps/search/?api=1&query=Dyu%20Art%20Cafe%20KHB%20MIG%20Colony%2C%20Dyu%20art%20cafe%2023%2C%2022%2C%201st%20Cross%20Rd%2C%20Koramangala%208th%20Block%2C%20Koramangala%2C%20Bengaluru%2C%20Karnataka%20560095%2C%20India",
+      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "uncertainties": [
+        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+      ]
+    },
+    {
+      "name": "The Hole In The Wall Cafe",
+      "source": "https://www.google.com/maps/search/?api=1&query=The%20Hole%20In%20The%20Wall%20Cafe%203%2C%208th%20Main%20Rd%2C%204th%20Block%2C%20Koramangala%2C%20Bengaluru%2C%20Karnataka%20560047%2C%20India",
+      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "uncertainties": [
+        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+      ]
+    },
+    {
+      "name": "Matteo Coffea",
+      "source": "https://www.google.com/maps/search/?api=1&query=Matteo%20Coffea%202%2C%20Church%20Street%2C%20Brigade%20Rd%2C%20Bengaluru%2C%20Karnataka%20560001%2C%20India",
+      "retrievedAt": "2026-10-04T09:20:46.594Z",
+      "uncertainties": [
+        "Price, date-specific hours, travel time, noise, and access need confirmation before visiting."
+      ]
+    }
+  ],
+  "deployment": {
+    "id": "dep-db11jrc9v7es73dgp3h0",
+    "commit": "0abc95c62460edd79f84734426cb50c910a3f184"
+  },
+  "browserCheck": "Actual public browser created a live outing, saved private requirements and displayed three source-linked real venue cards."
+}

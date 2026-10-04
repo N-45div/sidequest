@@ -22,3 +22,7 @@ Backboard and TabPFN result files are intentionally absent until those evaluatio
 ## Public deployment
 
 `render-live.json` records actual API execution against https://sidequest-lzrz.onrender.com with MongoDB Atlas. Fictional test participants cover independent joining, private preferences, authorization, deterministic filters, votes, idempotent confirmation and calendar download. Run `node scripts/live-check.mjs <public-url>` before redeployment, then `node scripts/live-check.mjs <public-url> --verify-persistence` after the new deployment is live. The credential needed for read-back stays only in ignored `artifacts/`.
+
+## SerpApi live discovery
+
+`serpapi-live.json` records real Google Maps results returned by the public Render app through Mastra. The checks verify live mode, source URLs, retrieval timestamps and preservation of unknown costs, noise and access. The organiser is fictional; venue names and sources are actual search output. The API key and participant credential are excluded.

@@ -32,7 +32,7 @@ The repository is public. SideQuest is independent of Parallel: it contains no P
 
 React and TypeScript provide the decision room. An Express API owns authorization, voting and confirmations. Deterministic checks filter known budget, time, quietness and access constraints; a model does not get to bypass them. Preference changes invalidate earlier cards and votes.
 
-Mastra runs the discovery workflow. The optional Gemma interpreter produces a validated draft for a person to review before saving. Its live model endpoint is not connected yet; typed controls already work.
+Mastra runs the discovery workflow. SerpApi Google Maps discovery is connected on Render and returns actual source-linked venues; unknown prices, hours, quietness and access are explicitly unresolved. The optional Gemma interpreter produces a validated draft for a person to review before saving. Its live model endpoint is not connected yet; typed controls already work.
 
 Temporal runs discovery as a durable job. Workflow history carries opaque IDs and a version, while the activity loads preferences from the application's store. In the executed local test, an injected tool failure was followed by worker shutdown. A fresh worker completed the saved retry. Separate tests show that changed preferences invalidate an in-flight result.
 
@@ -56,12 +56,13 @@ Session export is pending. Earlier conversation history includes credentials, so
 
 Evidence available now:
 
+- **SerpApi:** actual public Google Maps search through the Mastra workflow, with source links and uncertainty labels.
 - **Render:** actual public frontend/API deployment.
 - **MongoDB Atlas:** real database write/read and deployed multi-participant checks.
 - **Temporal:** real local retry/recovery execution and stale-result protection.
 - **Tinker:** actual baseline/tuned results, with the tiny synthetic evaluation and weak final accuracy disclosed.
 - **GitHub Copilot category, through GitHub Actions:** real build/test automation. The official category accepts Actions; no Copilot coding/review session is claimed.
 
-Mastra runs the planner, but its live open-model orchestration still needs verification. Gemma, DigitalOcean, SerpApi, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
+Mastra runs both sample and real SerpApi discovery; its open-model interpretation endpoint still needs verification. Gemma, DigitalOcean, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
 
 Hardware is outside the active release scope; no Arduino category is entered.

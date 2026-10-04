@@ -33,4 +33,4 @@ Never display `.env`, deployment keys, private session credentials or raw conver
 
 ## Submission readiness
 
-Public repository and hosted core app are available. Live search evidence belongs in `evaluations/serpapi-live.json` after the public check executes. Still needed: the local demo video, participant details and eligibility confirmation, final factual review, and the participant's acceptance of the official Rules and Terms before submitting through the website.
+Public repository and hosted core app are available. Actual public live-search checks passed and are recorded in `evaluations/serpapi-live.json`. Still needed: the local demo video, participant details and eligibility confirmation, final factual review, and the participant's acceptance of the official Rules and Terms before submitting through the website.

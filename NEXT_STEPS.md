@@ -9,7 +9,7 @@ Enter secrets directly into ignored `.env` for development and Render Environmen
 | Needed | Enables | Verification |
 | --- | --- | --- |
 | Atlas URI | Connected on public Render service | Write/read, independent host/guest checks and post-redeployment persistence passed |
-| SerpApi key | Real source-linked venues | A live city search, uncertainty labels, unavailable-search recovery |
+| SerpApi key | Configured locally and in Render secrets | Actual Bengaluru discovery passed locally and on Render; sources and unknown requirements verified |
 | DigitalOcean host/domain and Gemma endpoint | Open-model preference extraction | Consented draft, correct time encoding, invalid-output recovery |
 | Tiger Data URL + embedding endpoint | Hybrid venue corpus | Execute migration, indexed real venues, retrieval quality |
 | Temporal account/address + Render worker | Hosted durable discovery | Replace worker during a real job; complete once |
