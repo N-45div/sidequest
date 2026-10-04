@@ -6,7 +6,7 @@ None of these files proves a cloud deployment. They make the deployment reviewab
 
 The root `render.yaml` deploys the web app. Supply Atlas credentials; the production app intentionally refuses local SQLite. Optional voice and tracing settings can be added through Render Environment without exposing values in git.
 
-A Render background worker uses the same repository, `npm ci && npm run build`, and `npm run worker`. Set `NODE_ENV=production`, the same `MONGODB_URI` and `MONGODB_DATABASE`, and `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_API_KEY`. Configure the same live-search, embedding and Sentry values on the worker. Then set Temporal values on the web service to enable queued discovery. Do not enable queueing without a running worker.
+A Render background worker uses the same repository, `npm ci --include=dev && npm run build`, and `npm run worker`. Set `NODE_ENV=production`, the same `MONGODB_URI` and `MONGODB_DATABASE`, and `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_API_KEY`. Configure the same live-search, embedding and Sentry values on the worker. Then set Temporal values on the web service to enable queued discovery. Do not enable queueing without a running worker.
 
 Temporal Cloud uses TLS when `TEMPORAL_API_KEY` is configured. Development can use a local non-TLS server. The workflow records outing ID, job ID and preference version only; the activity loads exact preferences from the application store. Retries are bounded to five attempts and ten minutes. Repeat dispatch uses the same workflow ID. The browser polls job state, rejects stale options and exposes a retry after failure.
 

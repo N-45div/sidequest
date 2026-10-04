@@ -26,7 +26,7 @@ The planned temporary Render preview uses sample activities and memory-only stor
 
 [SideQuest repository](https://github.com/N-45div/sidequest)
 
-The repository is currently private. Reviewer access or public visibility remains a release decision. SideQuest is independent of Parallel: it contains no Parallel code, assets or conference-planning workflow.
+The repository is public. SideQuest is independent of Parallel: it contains no Parallel code, assets or conference-planning workflow.
 
 ## How I Built It
 
@@ -62,4 +62,4 @@ Evidence available now:
 
 Mastra runs the planner, but its live open-model orchestration still needs verification. Render, Gemma, DigitalOcean, Atlas, SerpApi, Tiger Data, Sentry, ElevenLabs, Backboard, TabPFN and Entire remain pending live evidence. Their adapters or setup files alone are not category claims.
 
-The available Arduino is an UNO R3. Its sensor sketch and observation bridge are prepared, but no physical run is claimed. It does not satisfy the category's UNO Q requirement.
+Hardware is outside the active release scope; no Arduino category is entered.

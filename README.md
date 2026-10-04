@@ -14,14 +14,13 @@ Independent new project for the Hacktoberfest Weekend Challenge. The current per
 - Invalidate old candidates and votes when preferences or membership change.
 - Persist local development data in SQLite; use MongoDB Atlas when configured.
 - Optional SerpApi live discovery and Gemma-compatible extraction adapters, awaiting live verification with credentials.
-- UNO R3 sketch, serial bridge, and authenticated observation endpoint. Hardware is not physically verified.
 - Tinker connectivity verified; actual bounded fine-tuning experiment completed. Exact JSON matches improved from 0/6 to 2/6 synthetic cases; this remains too unreliable for production. See [evaluations](evaluations/README.md).
 - Mastra discovery and model interpretation workflows; discovery executed locally.
 - Temporal queued discovery and separate worker. A real local Temporal server recovered a persisted retry after worker replacement.
 - Consent-based voice-note uploads, reviewable transcription drafts and confirmed audio invitations. Browser flows tested with provider fixtures; live ElevenLabs access is pending.
 - Sentry spans with strict export redaction, optional Tiger Data hybrid retrieval and authenticated inference deployment files. See [integration setup](infra/README.md).
 
-This is a working prototype, not a completed all-sponsor submission or a deployed Render service. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
+This is a working prototype, not a completed submission; public deployment is in progress. See [SPONSORS.md](SPONSORS.md) for accurate integration status.
 
 ## Run locally
 
@@ -74,10 +73,6 @@ python -m venv .venv
 ```
 
 The experiment is bounded to Qwen3-8B, rank 8, three optimizer steps, 24 synthetic training cases, and six distinct held-out synthetic cases. It records baseline/tuned field and exact-match scores and a checkpoint. This is a smoke evaluation, not evidence of general usefulness. Results can show no improvement; do not claim otherwise. Training/sampling use provider credits or incur provider usage charges.
-
-## Hardware
-
-See [hardware/README.md](hardware/README.md). UNO R3 requires an external analog microphone to measure an ambient signal. Raw ADC amplitude is not decibels, a calibrated classifier, or verified venue accessibility. The challenge's UNO Q category is not satisfied by an R3.
 
 ## Boundaries
 

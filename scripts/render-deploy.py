@@ -2,12 +2,14 @@
 import argparse
 import json
 import os
+import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 REPO = 'https://github.com/N-45div/sidequest'
 STATE = ROOT / 'artifacts' / 'render-service.json'
 for line in (ROOT / '.env').read_text().splitlines():
@@ -59,7 +61,7 @@ def main():
                 'envVars': [{'key': 'NODE_ENV', 'value': 'production'}, {'key': 'NODE_VERSION', 'value': '24.11.1'},
                     {'key': 'ALLOW_EPHEMERAL_DEMO', 'value': 'true'}],
                 'serviceDetails': {'runtime': 'node', 'plan': 'free', 'region': 'singapore', 'numInstances': 1,
-                    'healthCheckPath': '/api/health', 'envSpecificDetails': {'buildCommand': 'npm ci && npm run build', 'startCommand': 'npm start'}}})
+                    'healthCheckPath': '/api/health', 'envSpecificDetails': {'buildCommand': 'npm ci --include=dev && npm run build', 'startCommand': 'npm start'}}})
             state = remember(result.get('service', result))
         print(json.dumps(state))
     else:
