@@ -8,7 +8,8 @@ and hour.
   python scripts/tabpfn_busyness.py evaluate     venue-grouped cross-validation: TabPFN vs two baselines
   python scripts/tabpfn_busyness.py publish      fit on every venue with history, forecast the rest, write to Atlas
 
-Requires TABPFN_TOKEN (Prior Labs) in .env; MONGODB_URI for publish. Results: evaluations/tabpfn-busyness.json
+Runs TabPFN v2's open weights locally (pip install tabpfn); TABPFN_TOKEN switches to Prior Labs' hosted client.
+MONGODB_URI is needed for publish. Results: evaluations/tabpfn-busyness.json
 """
 import argparse
 import json
@@ -117,11 +118,18 @@ def band(score):
 
 
 def tabpfn():
-    from tabpfn_client import TabPFNRegressor, set_access_token
-    if not os.environ.get('TABPFN_TOKEN'):
-        raise SystemExit('Set TABPFN_TOKEN in ignored .env (Prior Labs account token).')
-    set_access_token(os.environ['TABPFN_TOKEN'])
-    return TabPFNRegressor()
+    """TabPFN's open weights on this machine's CPU; Prior Labs' hosted client only when TABPFN_TOKEN is set."""
+    if os.environ.get('TABPFN_TOKEN'):
+        from tabpfn_client import TabPFNRegressor, set_access_token
+        set_access_token(os.environ['TABPFN_TOKEN'])
+        return TabPFNRegressor()
+    # v2 weights download without an account; later versions are gated behind a Prior Labs login
+    from tabpfn import TabPFNRegressor
+    from tabpfn.constants import ModelVersion
+    return TabPFNRegressor.create_default_for_version(ModelVersion.V2, device='cpu', ignore_pretraining_limits=True, random_state=0)
+
+
+BACKEND = 'Prior Labs hosted client' if os.environ.get('TABPFN_TOKEN') else 'TabPFN v2 open weights, local CPU'
 
 
 def lookup_baseline(train, test):
@@ -149,14 +157,16 @@ def evaluate():
     truth = data.busyness.to_numpy()
     results = {name: {'mae': round(float(np.mean(np.abs(p - truth))), 2),
                       'band_accuracy': round(float(np.mean(band(p) == band(truth))), 4),
-                      'quiet_hours_found': round(float(np.mean(band(p)[band(truth) == 0] == 0)), 4)}
+                      'quiet_hours_found': round(float(np.mean(band(p)[band(truth) == 0] == 0)), 4),
+                      # Of the hours a model calls quiet, how many really were: guards against calling everything quiet
+                      'quiet_calls_right': round(float(np.mean(band(truth)[band(p) == 0] == 0)), 4) if (band(p) == 0).any() else None}
                for name, p in predictions.items()}
     report = {'task': 'usual busyness of a study space at an hour (Google popular times, 0-100)',
               'city': 'Bengaluru', 'venues_with_history': int(data.place_id.nunique()), 'rows': int(len(data)),
               'by_category': data.groupby('category_name').place_id.nunique().to_dict(),
               'validation': '5-fold cross-validation grouped by venue: every score is for a venue the model never saw',
               'features': FEATURES, 'bands': 'quiet < 40 <= a little busy < 70 <= busy',
-              'results': results, 'tabpfn_seconds': round(seconds, 1),
+              'results': results, 'tabpfn_backend': BACKEND, 'tabpfn_seconds': round(seconds, 1),
               'notes': 'Popular times measure how crowded a place usually is, not how loud it is. Venue counts are small; '
                        'treat the comparison as indicative.'}
     REPORT.write_text(json.dumps(report, indent=1) + '\n', encoding='utf-8')

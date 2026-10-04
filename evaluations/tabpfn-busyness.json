@@ -1,0 +1,53 @@
+{
+ "task": "usual busyness of a study space at an hour (Google popular times, 0-100)",
+ "city": "Bengaluru",
+ "venues_with_history": 39,
+ "rows": 3254,
+ "by_category": {
+  "campus": 3,
+  "coffee": 19,
+  "coworking": 1,
+  "library": 3,
+  "outdoors": 13
+ },
+ "validation": "5-fold cross-validation grouped by venue: every score is for a venue the model never saw",
+ "features": [
+  "category",
+  "place_type",
+  "rating",
+  "log_reviews",
+  "latitude",
+  "longitude",
+  "weekday",
+  "weekend",
+  "hour",
+  "opens",
+  "closes",
+  "since_open",
+  "until_close"
+ ],
+ "bands": "quiet < 40 <= a little busy < 70 <= busy",
+ "results": {
+  "category-hour average": {
+   "mae": 14.81,
+   "band_accuracy": 0.5424,
+   "quiet_hours_found": 0.4205,
+   "quiet_calls_right": 0.5966
+  },
+  "gradient boosting": {
+   "mae": 14.37,
+   "band_accuracy": 0.5532,
+   "quiet_hours_found": 0.5219,
+   "quiet_calls_right": 0.622
+  },
+  "TabPFN": {
+   "mae": 14.53,
+   "band_accuracy": 0.5707,
+   "quiet_hours_found": 0.6342,
+   "quiet_calls_right": 0.5929
+  }
+ },
+ "tabpfn_backend": "TabPFN v2 open weights, local CPU",
+ "tabpfn_seconds": 330.4,
+ "notes": "Popular times measure how crowded a place usually is, not how loud it is. Venue counts are small; treat the comparison as indicative."
+}
