@@ -15,7 +15,7 @@ Current feasible sponsor evidence; hardware is excluded from the active scope. D
 | Sentry Agent Tracing | Explicit agent/model/tool spans and export redaction implemented and tested | DSN, received real trace and failure diagnosis in Sentry |
 | ElevenLabs | Live on Render: Scribe transcribes consented voice notes into the tuned model; confirmed plans become spoken invitations | Production transcription and invitation checked October 4 |
 | Backboard | Same-fixture open-model evaluation script prepared, memory disabled | Key/selected models and actual comparison results |
-| TabPFN | Chronological real-history evaluation script prepared; no dataset supplied | Consented real outing data, account and honest evaluation |
+| TabPFN | v2 open weights run locally on Google popular-times history for 39 Bengaluru venues; forecasts for 100 more are live beside each option | Venue-grouped 5-fold check: ties baselines on average error, finds 63% of quiet hours against 52% and 42%; small sample |
 | Tinker | LoRA fine-tune of Qwen3.5-4B serves live drafts through Tinker's OpenAI-compatible endpoint; 34/50 → 50/50 hand-written, 58/100 → 99/100 generated | Tinker describes that endpoint as suited to low traffic; synthetic evaluation sets |
 | GitHub Copilot category | Actual GitHub Actions build/test automation verified successful; the official category explicitly accepts Actions automation | Describe Actions honestly; no Copilot coding or review session is claimed |
 

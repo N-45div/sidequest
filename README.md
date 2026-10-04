@@ -42,6 +42,18 @@ The model is **Qwen3.5-4B with a LoRA adapter trained on Tinker**, served live t
 
 On 100 unseen generated messages the tuned model scores 99, against 58 zero-shot and 91 for the 27B model. Training used 800 synthetic messages; no participant data. The prompt lives in [server/extraction-prompt.txt](server/extraction-prompt.txt) and is shared by the trainer and the server, so serving matches training token for token. See [scripts/tinker_study.py](scripts/tinker_study.py) and [evaluations/tinker-study.json](evaluations/tinker-study.json).
 
+## How busy will it be?
+
+Google shows popular times for only 39 of the 175 Bengaluru study spots SideQuest's searches found, and almost none of the reading rooms. [scripts/tabpfn_busyness.py](scripts/tabpfn_busyness.py) runs **TabPFN v2's open weights locally** on that history. It uses only search-result features (place type, rating, review count, location, opening hours, weekday, hour), so a forecast never needs a paid place lookup.
+
+| Unseen venues, 5 folds grouped by venue | Avg. error (0-100) | Quiet hours found | Quiet calls right |
+| --- | --- | --- | --- |
+| Average by place type and hour | 14.8 | 42% | 60% |
+| Gradient boosting | 14.4 | 52% | 62% |
+| **TabPFN v2** | 14.5 | **63%** | 59% |
+
+The forecasts for 100 venues (plus Google's own numbers for 39) are stored in Atlas. Each live option shows how busy it usually is at the circle's start time, and quieter places rank first when someone needs quiet. Busyness is crowding, not noise, so forecasts order options and never remove them. Coworking spaces get no forecast: only one had history to learn from. See [evaluations/tabpfn-busyness.json](evaluations/tabpfn-busyness.json).
+
 ## Try it
 
 **Explore a sample circle** opens a fictional revision group with illustrative library, campus and study-cafe concepts. It works without search or model credentials.
@@ -62,6 +74,7 @@ Live prices, hours, noise, campus visitor eligibility, travel time and group-dis
 | Temporal | Official local server recovered a persisted retry after worker replacement |
 | Tinker | Fine-tuned Qwen3.5-4B serves live preference drafts; 34/50 → 50/50 on hand-written held-out messages |
 | ElevenLabs | Live voice-note transcription (Scribe) and spoken invitations, checked on the public service |
+| TabPFN | v2 open weights, local: busyness forecasts for 100 venues without Google history; 63% of quiet hours found on unseen venues |
 
 [Evaluation reports](evaluations/README.md) record provenance and limits. Prepared adapters do not imply completed connections. Sentry cloud tracing, Tiger Data, Backboard and hosted Temporal remain conditional. Entire is installed locally; capture needs hook trust review and a reviewed session. Hardware is outside active release scope.
 
