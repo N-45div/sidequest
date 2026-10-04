@@ -1,9 +1,3 @@
----
-title: "SideQuest: getting the group plan out of the chat"
-published: false
-tags: devchallenge, weekendchallenge, hf26challenge
----
-
 *This is a submission for the [Hacktoberfest Weekend Challenge: Build for a Friend](https://dev.to/challenges/hacktoberfest-weekend-2026-10-01)*
 
 ## What I Built

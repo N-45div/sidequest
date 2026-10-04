@@ -12,8 +12,8 @@ The user chose a hypothetical persona. Fictional sample people and prices remain
 
 ## Feasible release priorities
 
-1. Deploy the working frontend/API to the free Render service and verify the public URL.
-2. Connect the supplied Atlas cluster after its network access is configured. Verify separate host/guest sessions and persistence. Disable the temporary-preview flag when Atlas is verified.
+1. Completed: public Render frontend/API deployment and live flow verification.
+2. Completed: Atlas connection, independent host/guest privacy checks, persistence across redeployment; temporary preview disabled.
 3. Keep Mastra discovery, deterministic constraint checks and typed controls working. The optional Gemma interpreter requires a real endpoint and reviewed drafts before saving.
 4. Retain executed Temporal recovery, Tinker experiment and GitHub Actions evidence. Do not equate the tiny synthetic model evaluation with production reliability.
 5. Test mobile interaction, errors, provider outages, stale results, authorization and calendar output on the deployed service.
@@ -21,7 +21,7 @@ The user chose a hypothetical persona. Fictional sample people and prices remain
 
 ## Conditional integrations
 
-SerpApi live venues, Gemma inference, ElevenLabs voice, Sentry cloud tracing, Tiger Data retrieval, Backboard model comparison and DigitalOcean inference stay optional until the relevant credentials, account access or compute are supplied. TabPFN additionally needs consented real historical data. Entire needs an actual safely shareable session. None blocks the core sample release.
+SerpApi live venues are verified on Render. Gemma inference, ElevenLabs voice, Sentry cloud tracing, Tiger Data retrieval, Backboard model comparison and DigitalOcean inference stay optional until the relevant credentials, account access or compute are supplied. TabPFN additionally needs consented real historical data. Entire is the last sponsor in the active checklist: its local CLI/hooks are installed, but capture needs hook trust review and an actual safely shareable session. None blocks the core sample release.
 
 Current implementations and evidence are recorded in SPONSORS.md. Only verified uses should appear as prize-category claims. A setup file or SDK import is not execution evidence.
 

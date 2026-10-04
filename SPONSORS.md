@@ -17,7 +17,8 @@ Current feasible sponsor evidence; hardware is excluded from the active scope. D
 | Backboard | Same-fixture open-model evaluation script prepared, memory disabled | Key/selected models and actual comparison results |
 | TabPFN | Chronological real-history evaluation script prepared; no dataset supplied | Consented real outing data, account and honest evaluation |
 | Tinker | Connectivity verified; real three-step LoRA training and baseline/tuned evaluation completed | Broader evaluation and reliable runtime integration; current exact-match result is only 2/6 synthetic cases |
-| Entire | Planned | Actual captured session linked in submission |
 | GitHub Copilot category | Actual GitHub Actions build/test automation verified successful; the official category explicitly accepts Actions automation | Describe Actions honestly; no Copilot coding or review session is claimed |
+
+| Entire | Official CLI 0.11.3 installed, checksum verified; local Codex hooks enabled, telemetry and checkpoint uploads disabled | Hook trust review, actual SideQuest capture, credential review and safely shareable session link; zero imported sessions so far |
 
 No prize qualification is asserted by this file. Update rows only when the relevant executed artifact exists.

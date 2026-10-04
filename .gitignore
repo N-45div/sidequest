@@ -10,3 +10,7 @@ artifacts/
 __pycache__/
 test-results/
 playwright-report/
+
+# Local agent hooks and session capture may contain private history.
+.codex/
+.entire/
