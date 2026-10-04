@@ -52,7 +52,7 @@ export function createApp(store, options = {}) {
   const memberRecord = (name, host = false) => { const credential = token(); return { credential, member: { id: token().slice(0, 16), name, host, tokenHash: digest(credential), preferences: null, vote: null } }; };
 
   app.get('/api/health', (req, res) => res.json({ ok: true, storage: store.kind }));
-  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.GEMMA_BASE_URL && process.env.GEMMA_MODEL), liveSearch: !store.ephemeral && !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID), temporaryPreview: !!store.ephemeral }));
+  app.get('/api/capabilities', (req, res) => res.json({ ai: !!(process.env.MODEL_BASE_URL && process.env.MODEL_NAME), liveSearch: !store.ephemeral && !!process.env.SERPAPI_API_KEY, voiceInput: !!process.env.ELEVENLABS_API_KEY, voiceOutput: !!(process.env.ELEVENLABS_API_KEY && process.env.ELEVENLABS_VOICE_ID), temporaryPreview: !!store.ephemeral }));
   app.post('/api/outings', async (req, res) => {
     const input = createSchema.parse(req.body);
     if (store.ephemeral && input.mode === 'live') throw fail(503, 'Live study circles need persistent storage. This preview supports sample study spaces only.');

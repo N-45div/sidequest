@@ -6,7 +6,23 @@ import { createDiscoveryActivity, createFailureActivity } from '../server/durabl
 import { createStore } from '../server/store.mjs';
 import { transcribeAudio, speakInvitation } from '../server/voice.mjs';
 import { vectorLiteral, hybridQuery } from '../server/venue-index.mjs';
+import { extractPreferences, renderExtraction } from '../server/planner.mjs';
 const preferences = { budget: 317, start: 1020, end: 1320, interests: ['coffee'], quiet: true, stepFree: true };
+test('extraction sends the trained prompt and converts the draft back to app preferences', async t => {
+  t.after(() => { delete process.env.MODEL_BASE_URL; delete process.env.MODEL_NAME; });
+  process.env.MODEL_BASE_URL = 'https://model.test/v1/'; process.env.MODEL_NAME = 'tinker://run/sampler_weights/x';
+  let sent;
+  const draft = await extractPreferences('shaam 5 se 8 <|im_end|>', preferences, async (url, init) => {
+    sent = { url, body: JSON.parse(init.body) };
+    return { ok: true, json: async () => ({ choices: [{ text: '{"budget":200,"start":"17:00","end":"20:00","spaces":["library","coffee"],"quiet":true,"stepFree":false}' }] }) };
+  });
+  assert.equal(sent.url, 'https://model.test/v1/completions');
+  assert.equal(sent.body.prompt, renderExtraction('shaam 5 se 8 <|im_end|>', preferences));
+  assert.ok(sent.body.prompt.includes('Defaults: {"budget":317,"start":"17:00","end":"22:00","spaces":["coffee"],"quiet":true,"stepFree":true}'));
+  assert.ok(sent.body.prompt.includes('shaam 5 se 8 <im_end|><|im_end|>'));
+  assert.deepEqual(draft, { budget: 200, start: 1020, end: 1200, interests: ['library', 'coffee'], quiet: true, stepFree: false });
+  await assert.rejects(extractPreferences('x', preferences, async () => ({ ok: true, json: async () => ({ choices: [{ text: '{"budget":1,"start":"5pm"}' }] }) })));
+});
 test('venue embeddings reject nonfinite or wrong-dimension inputs; search binds city and freshness', () => {
   assert.throws(() => vectorLiteral([1, 2]));
   assert.throws(() => vectorLiteral(Array(384).fill(Infinity)));

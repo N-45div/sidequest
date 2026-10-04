@@ -16,8 +16,8 @@ const validate = createStep({ id: 'validate-shortlist', inputSchema: candidatesS
 const discovery = createWorkflow({ id: 'sidequest-discovery', inputSchema, outputSchema: candidatesSchema })
   .then(search).then(validate).commit();
 const extractionInput = z.object({ text: z.string().min(1).max(2000), defaults: preferenceSchema });
-const extract = createStep({ id: 'gemma-extract', inputSchema: extractionInput, outputSchema: preferenceSchema,
-  execute: async ({ inputData }) => trace('gen_ai.chat', 'gemma', () => extractPreferences(inputData.text, inputData.defaults)) });
+const extract = createStep({ id: 'extract-preferences', inputSchema: extractionInput, outputSchema: preferenceSchema,
+  execute: async ({ inputData }) => trace('gen_ai.chat', 'qwen-tinker', () => extractPreferences(inputData.text, inputData.defaults)) });
 const interpretation = createWorkflow({ id: 'sidequest-interpretation', inputSchema: extractionInput, outputSchema: preferenceSchema }).then(extract).commit();
 async function run(workflow, inputData) {
   const execution = await workflow.createRun();
