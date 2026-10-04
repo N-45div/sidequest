@@ -27,6 +27,21 @@ flowchart LR
 
 Changing preferences or membership clears earlier options and votes. Confirmation locks further planning changes.
 
+## Say it the way you'd text it
+
+Students can type their preferences the way they'd message the group (*"kal shaam 5 se 8 free hu, 200 se zyada nahi, library ya cafe, lift chahiye"*) or upload a voice note. ElevenLabs Scribe transcribes the note. A fine-tuned open model turns the text into a draft that fills the same private controls. Nothing is saved until the student reviews it.
+
+The model is **Qwen3.5-4B with a LoRA adapter trained on Tinker**, served live through Tinker's OpenAI-compatible endpoint. On 50 hand-written held-out messages (English, Hinglish, typos, prompt-injection attempts):
+
+| Model | Exact on all six fields |
+| --- | --- |
+| Qwen3.5-4B, zero-shot | 34 / 50 |
+| Qwen3.5-4B, three examples in the prompt | 35 / 50 |
+| Qwen3.6-27B, zero-shot | 50 / 50 |
+| **Qwen3.5-4B, fine-tuned on Tinker** | **50 / 50** |
+
+On 100 unseen generated messages the tuned model scores 99, against 58 zero-shot and 91 for the 27B model. Training used 800 synthetic messages; no participant data. The prompt lives in [server/extraction-prompt.txt](server/extraction-prompt.txt) and is shared by the trainer and the server, so serving matches training token for token. See [scripts/tinker_study.py](scripts/tinker_study.py) and [evaluations/tinker-study.json](evaluations/tinker-study.json).
+
 ## Try it
 
 **Explore a sample circle** opens a fictional revision group with illustrative library, campus and study-cafe concepts. It works without search or model credentials.
@@ -45,9 +60,10 @@ Live prices, hours, noise, campus visitor eligibility, travel time and group-dis
 | Core correctness | 18 automated tests, build and Actions passed for the study-circle release |
 | Browser | New public homepage/revision shortlist checked; earlier full desktop/mobile flows recorded |
 | Temporal | Official local server recovered a persisted retry after worker replacement |
-| Tinker | Qwen3-8B experiment: exact extraction improved from 0/6 to 2/6 synthetic cases; outside production |
+| Tinker | Fine-tuned Qwen3.5-4B serves live preference drafts; 34/50 → 50/50 on hand-written held-out messages |
+| ElevenLabs | Live voice-note transcription (Scribe) and spoken invitations, checked on the public service |
 
-[Evaluation reports](evaluations/README.md) record provenance and limits. Prepared adapters do not imply completed connections. Gemma, ElevenLabs, Sentry cloud tracing, Tiger Data, Backboard, TabPFN and hosted Temporal remain conditional. Entire is installed locally; capture needs hook trust review and a reviewed session. Hardware is outside active release scope.
+[Evaluation reports](evaluations/README.md) record provenance and limits. Prepared adapters do not imply completed connections. Sentry cloud tracing, Tiger Data, Backboard and hosted Temporal remain conditional. Entire is installed locally; capture needs hook trust review and a reviewed session. Hardware is outside active release scope.
 
 ## Run locally
 
@@ -87,7 +103,7 @@ Copy names from [.env.example](.env.example). Put values in ignored `.env` local
 | `PORT`, `NODE_ENV` | HTTP port/storage guard; local defaults are 3100/development |
 | `MONGODB_URI`, `MONGODB_DATABASE` | Atlas storage; database defaults to `sidequest` |
 | `SERPAPI_API_KEY` | Live study-space discovery |
-| `GEMMA_BASE_URL`, `GEMMA_MODEL`, `GEMMA_API_KEY` | Optional compatible model endpoint for consented preference drafts |
+| `MODEL_BASE_URL`, `MODEL_NAME`, `MODEL_API_KEY` | OpenAI-compatible completions endpoint and model for consented preference drafts (the tuned `tinker://` sampler path in production) |
 | `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_API_KEY` | Optional queueing with a separate worker |
 | `TIGER_DATABASE_URL`, `EMBEDDING_*` | Optional hybrid venue corpus |
 | `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID` | Optional transcription and confirmed audio invitations |
