@@ -93,6 +93,8 @@ npm start
 
 If `.env` exists, keep it and edit only needed settings. Blank `MONGODB_URI` with `NODE_ENV=development` uses SQLite at `.data/sidequest.db`. Open **http://localhost:3100**.
 
+`npm run demo` builds and runs the app on local SQLite with the settings in an ignored `.env.demo` (your `.env` without `MONGODB_URI`), so live search, the open model and voice work with no database. To show busyness labels locally, write the forecasts to a file once: `python scripts/tabpfn_busyness.py publish --out .data/busyness.json`.
+
 For frontend development, run these in separate terminals:
 
 ```powershell
