@@ -173,7 +173,7 @@ def evaluate():
     print(json.dumps(results, indent=1))
 
 
-def publish():
+def publish(out=None):
     frame = load()
     train = training_rows(frame)
     enough = {c for c, n in train.groupby('category_name').place_id.nunique().items() if n >= MIN_VENUES_PER_CATEGORY}
@@ -189,6 +189,12 @@ def publish():
                     week[r.weekday][r.hour - HOURS.start] = round(float(r.busyness), 1)
             documents.append({'_id': place_id, 'name': venue['name'].iloc[0], 'city': 'Bengaluru', 'source': source,
                               'week': week, 'updatedAt': stamp})
+    if out:
+        # The same documents as a file, for running SideQuest locally without a database
+        Path(out).parent.mkdir(parents=True, exist_ok=True)
+        Path(out).write_text(json.dumps(documents, ensure_ascii=False), encoding='utf-8')
+        print(f'wrote {len(documents)} forecasts to {out}')
+        return
     from pymongo import MongoClient, ReplaceOne
     collection = MongoClient(os.environ['MONGODB_URI'])[os.environ.get('MONGODB_DATABASE') or 'sidequest']['busyness']
     collection.bulk_write([ReplaceOne({'_id': d['_id']}, d, upsert=True) for d in documents])
@@ -204,4 +210,6 @@ def publish():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('mode', choices=['evaluate', 'publish'])
-    {'evaluate': evaluate, 'publish': publish}[parser.parse_args().mode]()
+    parser.add_argument('--out', help='publish: write the forecasts to this JSON file instead of MongoDB')
+    args = parser.parse_args()
+    evaluate() if args.mode == 'evaluate' else publish(args.out)
