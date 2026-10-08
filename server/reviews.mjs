@@ -5,8 +5,8 @@ import { MongoClient } from 'mongodb';
 // and the most relevant recent reviews; results are cached per place so repeat searches cost nothing.
 const SIGNALS = [
   { key: 'quiet', label: 'Quiet', words: /\b(peaceful|quiet|silent|silence|calm)\b/i },
-  { key: 'noisy', label: 'Noisy or crowded', words: /\b(noisy|noise|loud|crowded|crowd|rush)\b/i },
-  { key: 'study', label: 'Good for studying', words: /\b(study|studying|exams?|reading room|students)\b/i },
+  { key: 'noisy', label: 'Crowds or noise', words: /\b(noisy|noise|loud|crowded|crowd|rush)\b/i },
+  { key: 'study', label: 'Studying', words: /\b(study|studying|exams?|reading room|students)\b/i },
   { key: 'wifi', label: 'Wi-Fi', words: /\b(wi-?fi|internet)\b/i },
   { key: 'power', label: 'Charging points', words: /\b(charging|plug points?|sockets?|power points?)\b/i },
 ];
