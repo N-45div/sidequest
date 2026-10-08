@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { preferenceSchema, sampleCandidates, discoverLive, rankCandidates } from '../server/planner.mjs';
 import { crowdAt } from '../server/busyness.mjs';
+import { reviewEvidence, attachReviews } from '../server/reviews.mjs';
 
 const preferences = { budget:0, start:1020, end:1200, interests:['library','campus'], quiet:true, stepFree:true };
 test('study circles support free accessible revision spaces within the shared time window', () => {
@@ -35,4 +36,23 @@ test('busyness forecasts label the session hour and put quieter places first whe
   assert.deepEqual(rankCandidates([venue('busy'), venue('calm')], [{ ...person, quiet: true }]).map(c => c.name), ['calm', 'busy']);
   assert.deepEqual(rankCandidates([venue('busy'), venue('calm')], [person]).map(c => c.name), ['busy', 'calm']);
   assert.equal((await crowdAt(['busy'], '2026-10-05', 23 * 60, async () => docs)).size, 0);
+});
+test('review evidence turns Google review topics and recent reviews into labelled, quoted study signals', async () => {
+  const data = { topics: [{ keyword: 'peaceful place', mentions: 4 }, { keyword: 'exam study', mentions: 3 }, { keyword: 'magazines', mentions: 7 }],
+    reviews: [{ snippet: 'Very quiet reading hall, but the wifi is slow and it gets crowded before exams.', link: 'https://maps.example/r1' },
+      { snippet: 'Good collection of books.', link: 'https://maps.example/r2' }] };
+  const evidence = reviewEvidence(data);
+  const by = Object.fromEntries(evidence.signals.map(s => [s.key, s]));
+  assert.equal(by.quiet.mentions, 5);
+  assert.equal(by.study.mentions, 4);
+  assert.equal(by.wifi.mentions, 1);
+  assert.equal(by.noisy.mentions, 1);
+  assert.equal(by.quiet.link, 'https://maps.example/r1');
+  assert.ok(by.quiet.quote.includes('quiet reading hall'));
+  assert.equal(evidence.reviewed, 2);
+  assert.equal(by.power, undefined);
+  // Places without a Maps data ID are never looked up, and a failed lookup leaves the option unchanged
+  const options = [{ name: 'A', placeId: null, dataId: null }, { name: 'B', placeId: 'p', dataId: 'd' }];
+  await attachReviews(options, 'key', async () => ({ ok: false }));
+  assert.deepEqual(options.map(o => o.evidence), [undefined, undefined]);
 });

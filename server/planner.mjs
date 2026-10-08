@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { z } from 'zod';
 import { retrieveVenues, indexVenues } from './venue-index.mjs';
 import { crowdAt } from './busyness.mjs';
+import { attachReviews } from './reviews.mjs';
 
 export const preferenceSchema = z.object({
   budget: z.number().int().min(0).max(100000),
@@ -55,7 +56,7 @@ export async function discoverLive(city, preferences, key, date) {
     if (data.error) throw new Error('Venue search could not complete. Check the search account configuration.');
     return (data.local_results || []).slice(0, 5).map(v => ({
       name: String(v.title || 'Unnamed venue').slice(0, 120), subtitle: String(v.address || city).slice(0, 200),
-      category, cost: null, duration: 90, quiet: null, stepFree: null, tone: category, placeId: v.place_id || null,
+      category, cost: null, duration: 90, quiet: null, stepFree: null, tone: category, placeId: v.place_id || null, dataId: v.data_id || null,
       sample: false, source: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.title} ${v.address || city}`)}`,
       retrievedAt: new Date().toISOString(),
       uncertainties: ['Cost, study suitability, date-specific hours, noise, campus visitor eligibility and step-free access need confirmation before studying here.'],
@@ -70,7 +71,8 @@ export async function discoverLive(city, preferences, key, date) {
     } catch { /* forecasts are optional; options still rank without them */ }
   }
   const merged = new Map([...indexed, ...unique].map(v => [v.name + v.subtitle, v]));
-  return rankCandidates([...merged.values()], preferences);
+  // Reviews are read only for the shortlist, so a search costs at most three extra lookups
+  return attachReviews(rankCandidates([...merged.values()], preferences), key);
 }
 
 // Shared with scripts/tinker_study.py, which trains and scores the model on this exact prompt.
