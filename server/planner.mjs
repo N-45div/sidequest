@@ -4,6 +4,8 @@ import { z } from 'zod';
 import { retrieveVenues, indexVenues } from './venue-index.mjs';
 import { crowdAt } from './busyness.mjs';
 import { attachReviews } from './reviews.mjs';
+import { openFor } from './hours.mjs';
+import { attachTravel } from './travel.mjs';
 
 export const preferenceSchema = z.object({
   budget: z.number().int().min(0).max(100000),
@@ -11,6 +13,10 @@ export const preferenceSchema = z.object({
   end: z.number().int().min(1).max(1440),
   interests: z.array(z.enum(['library', 'campus', 'coworking', 'coffee', 'outdoors', 'food', 'games', 'art'])).min(1).max(8),
   quiet: z.boolean(), stepFree: z.boolean(),
+  // Where someone sets out from and how: private like the budget, used only to time each trip
+  from: z.string().trim().max(80).optional(),
+  travelMode: z.enum(['transit', 'two-wheeler', 'driving', 'walking']).optional(),
+  maxTravel: z.number().int().min(5).max(240).optional(),
 }).refine(p => p.end > p.start, { message: 'End time must be after start time.' });
 
 const activities = [
@@ -42,6 +48,10 @@ export function sampleCandidates(preferences) {
   return rankCandidates(activities.map(v => ({ ...v, sample: true, source: null, uncertainties: ['Illustrative study space and cost; campus access and real venue details have not been verified.'] })), preferences);
 }
 
+// A city's study spaces change slowly; repeat searches within half a day reuse the last result
+const SEARCH_FRESH_MS = 12 * 3600000;
+const searched = new Map();
+
 export async function discoverLive(city, preferences, key, date) {
   const categories = [...new Set(preferences.flatMap(p => p.interests))].slice(0, 3);
   // Retrieval is optional; search still works if the index is unavailable.
@@ -50,12 +60,17 @@ export async function discoverLive(city, preferences, key, date) {
   const responses = await Promise.all(categories.map(async category => {
     const url = new URL('https://serpapi.com/search.json');
     url.search = new URLSearchParams({ engine: 'google_maps', q: `${({ library: 'public libraries with study space', campus: 'university libraries study rooms', coworking: 'coworking study spaces', coffee: 'cafes for studying', outdoors: 'quiet parks for studying' })[category] || 'study spaces'} in ${city}`, type: 'search', api_key: key }).toString();
-    const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
-    if (!response.ok) throw new Error('Venue search is unavailable. Try again shortly.');
-    const data = await response.json();
-    if (data.error) throw new Error('Venue search could not complete. Check the search account configuration.');
+    const query = url.searchParams.get('q').toLowerCase();
+    let data = Date.now() - (searched.get(query)?.at ?? 0) < SEARCH_FRESH_MS ? searched.get(query).data : null;
+    if (!data) {
+      const response = await fetch(url, { signal: AbortSignal.timeout(15000) });
+      if (!response.ok) throw new Error('Venue search is unavailable. Try again shortly.');
+      data = await response.json();
+      if (data.error) throw new Error('Venue search could not complete. Check the search account configuration.');
+      searched.set(query, { data, at: Date.now() });
+    }
     return (data.local_results || []).slice(0, 5).map(v => ({
-      name: String(v.title || 'Unnamed venue').slice(0, 120), subtitle: String(v.address || city).slice(0, 200),
+      name: String(v.title || 'Unnamed venue').slice(0, 120), subtitle: String(v.address || city).slice(0, 200), hours: v.operating_hours || null,
       category, cost: null, duration: 90, quiet: null, stepFree: null, tone: category, placeId: v.place_id || null, dataId: v.data_id || null,
       sample: false, source: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.title} ${v.address || city}`)}`,
       retrievedAt: new Date().toISOString(),
@@ -71,8 +86,16 @@ export async function discoverLive(city, preferences, key, date) {
     } catch { /* forecasts are optional; options still rank without them */ }
   }
   const merged = new Map([...indexed, ...unique].map(v => [v.name + v.subtitle, v]));
-  // Reviews are read only for the shortlist, so a search costs at most three extra lookups
-  return attachReviews(rankCandidates([...merged.values()], preferences), key);
+  // Opening hours for the session's weekday: a place closed for the whole session is not an option
+  const start = Math.max(...preferences.map(p => p.start));
+  const venues = [...merged.values()].map(({ hours, ...v }) => {
+    const open = openFor(hours, date, start, v.duration);
+    return open?.open ? { ...v, open, uncertainties: ['Cost, study suitability, noise, campus visitor eligibility and step-free access need confirmation before studying here.'] } : open ? null : v;
+  }).filter(Boolean);
+  // Reviews and trip times are read only for the shortlist, so their lookups stay bounded by its three places
+  const shortlist = rankCandidates(venues, preferences);
+  const [, ordered] = await Promise.all([attachReviews(shortlist, key), attachTravel(shortlist, preferences, city, key, fetch, date)]);
+  return ordered;
 }
 
 // Shared with scripts/tinker_study.py, which trains and scores the model on this exact prompt.
